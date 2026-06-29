@@ -1,0 +1,19 @@
+.features-panel__add {
+  width: 100%;
+  min-height: 48px;
+}
+
+.features-panel__source {
+  font-size: 11px;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.features-panel__description {
+  flex: 1;
+  min-height: 70px;
+  font-size: 12px;
+  line-height: 1.5;
+  resize: vertical;
+}

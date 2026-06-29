@@ -1,0 +1,114 @@
+input.combat-panel__hitdice-input {
+  width: 28px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.combat-panel__hp,
+.combat-panel__hitdice,
+.combat-panel__deathsaves {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.combat-panel__hp-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.combat-panel__hp-row > span:first-child {
+  flex: 1 0 0;
+  font-size: 13px;
+}
+
+.combat-panel__hp-max {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.combat-panel__stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.combat-panel__stepper button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface-alt);
+}
+
+.combat-panel__stepper input {
+  width: 48px;
+  height: 28px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.combat-panel__hitdice {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.combat-panel__hitdice-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.combat-panel__hitdice-value {
+  min-width: 48px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.combat-panel__deathsaves-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.combat-panel__deathsaves-label {
+  width: 76px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.combat-panel__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.combat-panel__table th {
+  text-align: left;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  padding: var(--space-xs) var(--space-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.combat-panel__table td {
+  padding: var(--space-sm);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.combat-panel__table td:last-child {
+  width: 28px;
+  padding: var(--space-xs);
+}

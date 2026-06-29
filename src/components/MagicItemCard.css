@@ -1,0 +1,101 @@
+.magic-item-card__subtitle {
+  margin: 0;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.magic-item-card__description {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.magic-item-card__charges {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-xs) 0;
+  border-top: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--color-border-light);
+  font-size: 12px;
+}
+
+.magic-item-card__stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.magic-item-card__stepper button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface-alt);
+}
+
+.magic-item-card__charges-value {
+  min-width: 48px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.magic-item-card__features {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.magic-item-card__features li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.magic-item-card__feature-name {
+  font-weight: 700;
+}
+
+.magic-item-card__feature-level,
+.magic-item-card__feature-cost {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.magic-item-card__feature-effect {
+  line-height: 1.5;
+}
+
+.magic-item-card__progression {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.magic-item-card__progression-title {
+  margin: 0 0 4px;
+  font-style: italic;
+}
+
+.magic-item-card__progression ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.magic-item-card__regain {
+  margin: 0;
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border-light);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}

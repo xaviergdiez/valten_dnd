@@ -1,0 +1,20 @@
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.checkbox-group__label {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 16px;
+  min-width: 60px;
+  margin: 0;
+}
+
+.checkbox-group__boxes {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}

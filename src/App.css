@@ -1,0 +1,12 @@
+.app {
+  min-height: 100vh;
+  padding: var(--space-md);
+}
+
+.app__container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  max-width: 1600px;
+  margin: 0 auto;
+}

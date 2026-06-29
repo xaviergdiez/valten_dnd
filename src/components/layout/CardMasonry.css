@@ -1,0 +1,31 @@
+/* True masonry via CSS multi-column — only ever holds the small, fairly
+   uniform stat cards. The big self-contained panels (Spells, Background)
+   render outside this entirely (see App.jsx) so they can't disrupt column
+   balancing and leave a void above them. */
+.card-masonry {
+  column-count: 1;
+  column-gap: var(--space-lg);
+}
+
+.card-masonry__item {
+  break-inside: avoid;
+  margin-bottom: var(--space-lg);
+}
+
+@media (min-width: 800px) {
+  .card-masonry {
+    column-count: 2;
+  }
+}
+
+@media (min-width: 1300px) {
+  .card-masonry {
+    column-count: 3;
+  }
+}
+
+@media (min-width: 1750px) {
+  .card-masonry {
+    column-count: 4;
+  }
+}

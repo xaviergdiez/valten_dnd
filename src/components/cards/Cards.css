@@ -1,0 +1,116 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-md);
+  padding-top: 22px;
+  background: var(--color-surface);
+  border: var(--border-width-lg) solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.card--muted {
+  opacity: 0.55;
+}
+
+/* Spell card: pill title banner overlapping the top border + circular level
+   token, matching Valten_SpellCards.pdf. */
+.card__banner-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: -34px 0 0;
+}
+
+.card__banner {
+  margin: 0;
+  max-width: 78%;
+  padding: 5px 18px;
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card__token {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-left: var(--space-xs);
+  flex-shrink: 0;
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.card__description {
+  flex: 1;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+textarea.card__description {
+  width: 100%;
+  min-height: 70px;
+  resize: vertical;
+}
+
+.card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-top: var(--space-xs);
+  border-top: 2px solid var(--color-border);
+}
+
+.card__school {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  font-style: italic;
+}
+
+input.card__school {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+/* Authoring form for a brand-new spell with no card on file yet. */
+.card--authoring .card__authoring-level {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 12px;
+}
+
+.card--authoring .card__authoring-level label {
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.card--authoring .card__authoring-level input {
+  flex: 1;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: 12px;
+}
+

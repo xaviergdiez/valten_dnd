@@ -1,0 +1,140 @@
+.background-panel__tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+}
+
+.background-panel__tab {
+  flex-shrink: 0;
+  padding: var(--space-md);
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  font-size: 12px;
+  font-family: var(--font-body);
+  white-space: nowrap;
+}
+
+.background-panel__tab--active {
+  font-weight: 700;
+  border-bottom-color: var(--color-text);
+}
+
+.background-panel__backstory {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+}
+
+.background-panel__portrait {
+  width: 100%;
+  max-width: 320px;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-light);
+}
+
+.background-panel__portrait img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.background-panel__backstory-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.background-panel__paragraph {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.background-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+  font-size: 13px;
+}
+
+.background-panel__grid p {
+  margin: 2px 0 0;
+}
+
+.background-panel__label {
+  margin: 0;
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.background-panel__cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+.background-panel__cards p {
+  margin: 0 0 var(--space-sm);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.background-panel__cards p:last-child {
+  margin-bottom: 0;
+}
+
+.background-panel__list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.background-panel__editable-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.background-panel__editable-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 13px;
+}
+
+.background-panel__cells {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.background-panel__notes {
+  width: 100%;
+  min-height: 320px;
+  padding: var(--space-md);
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+@media (min-width: 700px) {
+  .background-panel__backstory {
+    grid-template-columns: 280px 1fr;
+  }
+
+  .background-panel__cards {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1100px) {
+  .background-panel__cards {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

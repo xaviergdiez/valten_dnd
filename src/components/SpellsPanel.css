@@ -1,0 +1,94 @@
+.spells-panel__tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+}
+
+.spells-panel__tab {
+  flex-shrink: 0;
+  padding: var(--space-md);
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  font-size: 12px;
+  font-family: var(--font-body);
+  white-space: nowrap;
+  color: var(--color-text-muted);
+}
+
+.spells-panel__tab--active {
+  font-weight: 700;
+  color: var(--color-text);
+  border-bottom-color: var(--color-gold);
+}
+
+.spells-panel__class,
+.spells-panel__items {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+.spells-panel__info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+}
+
+.spells-panel__info-label {
+  margin: 0;
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.spells-panel__slots {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.spells-panel__slot-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.spells-panel__slot-row:last-child {
+  border-bottom: none;
+}
+
+.spells-panel__slot-total {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+input.spells-panel__slot-total-input {
+  width: 28px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.spells-panel__rows {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 700px) {
+  .spells-panel__class,
+  .spells-panel__items {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1300px) {
+  .spells-panel__class,
+  .spells-panel__items {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

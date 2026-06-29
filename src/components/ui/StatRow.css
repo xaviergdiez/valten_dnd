@@ -1,0 +1,63 @@
+/* Divider lines between cells (including between wrapped rows) are drawn as
+   a 2px background "grid line" via gap, rather than per-cell borders — a
+   border-based approach has no clean way to skip the last cell/row for an
+   arbitrary, possibly-wrapping cell count, which was producing a doubled
+   border next to the outer frame. */
+.stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  background: var(--color-border);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.stat-row__cell {
+  flex: 1 1 80px;
+  min-width: 0;
+  padding: var(--space-xs) var(--space-xs);
+  text-align: center;
+  background: var(--color-surface);
+}
+
+.stat-row__label {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.stat-row__value {
+  margin-top: 2px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.1;
+}
+
+.stat-row--sm .stat-row__value {
+  font-size: 13px;
+}
+
+.stat-row__value input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-family: inherit;
+  font-weight: inherit;
+  font-size: inherit;
+  padding: 0;
+}
+
+.stat-row__value input:focus {
+  outline: none;
+  background: var(--color-surface-alt);
+  border-radius: 4px;
+}
