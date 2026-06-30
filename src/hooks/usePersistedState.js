@@ -25,7 +25,7 @@ function getAllLocalState() {
   return all;
 }
 
-function fetchRemoteState() {
+export function fetchRemoteState() {
   if (!remoteStatePromise) {
     remoteStatePromise = fetch(API_URL)
       .then((res) => (res.ok ? res.json() : {}))

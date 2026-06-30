@@ -13,18 +13,41 @@ export default function Header({
   setClassLevel,
   inspiration,
   setInspiration,
+  characterProfile,
+  avatarUrls,
+  onGenerateAvatar,
+  isGeneratingAvatar,
 }) {
+  const name = characterProfile?.characterName || "Character";
+  const nickname = characterProfile?.nickname;
+  const race = characterProfile?.race || "";
+  const cropUrl = avatarUrls?.crop;
+
   return (
     <header className="header">
-      <div className="header__portrait">
-        <img src="/valten-avatar.jpg" alt="Valten" />
-      </div>
+      <button
+        type="button"
+        className={`header__portrait ${isGeneratingAvatar ? "header__portrait--generating" : ""}`}
+        onClick={onGenerateAvatar}
+        title={isGeneratingAvatar ? "Generating…" : "Click to generate avatar with Gemini"}
+        aria-label="Generate avatar"
+      >
+        <img
+          src={cropUrl || "/valten-avatar.jpg"}
+          alt={name}
+        />
+        <span className="header__portrait-overlay" aria-hidden="true">
+          {isGeneratingAvatar ? "…" : "✦"}
+        </span>
+      </button>
+
       <div className="header__identity">
         <h1 className="header__name">
-          Valten <span className="header__nickname">"The Gentle Giant"</span>
+          {name}
+          {nickname && <span className="header__nickname"> "{nickname}"</span>}
         </h1>
         <p className="header__subline">
-          Human Undead &bull;{" "}
+          {race && <>{race} &bull; </>}
           <input
             className="inline-input header__classlevel-input"
             value={classLevel}
@@ -37,6 +60,7 @@ export default function Header({
           Inspiration
         </label>
       </div>
+
       <StatRow
         cells={[
           { label: "AC", value: combatStats.armorClass },

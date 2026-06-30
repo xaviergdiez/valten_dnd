@@ -23,7 +23,7 @@ export const combatSeed = {
   hpMax: 49,
   hpCurrentDefault: 49,
   hpTempDefault: 0,
-  hitDice: { count: 6, die: 8 },
+  hitDice: { count: 8, die: 8 },
   deathSaves: { successes: 0, failures: 0 },
 };
 
@@ -52,7 +52,7 @@ export const skillsSeed = [
   { name: "Arcana", ability: "int", proficient: false },
   { name: "Athletics", ability: "str", proficient: true },
   { name: "Deception", ability: "cha", proficient: false },
-  { name: "History", ability: "int", proficient: false },
+  { name: "History", ability: "int", proficient: true },
   { name: "Insight", ability: "wis", proficient: true },
   { name: "Intimidation", ability: "cha", proficient: false },
   { name: "Investigation", ability: "int", proficient: false },
@@ -61,7 +61,7 @@ export const skillsSeed = [
   { name: "Perception", ability: "wis", proficient: true },
   { name: "Performance", ability: "cha", proficient: false },
   { name: "Persuasion", ability: "cha", proficient: false },
-  { name: "Religion", ability: "int", proficient: false },
+  { name: "Religion", ability: "int", proficient: true },
   { name: "Sleight of Hand", ability: "dex", proficient: false },
   { name: "Stealth", ability: "dex", proficient: false },
   { name: "Survival", ability: "wis", proficient: true },
@@ -116,7 +116,7 @@ export const appearance = {
   skin: "Pale",
   hair: "Shaved/Beard",
   description:
-    "Valten is a rugged, imposing figure, often mistaken for a brute due to his heavy brow and weather-beaten skin. He wears heavy Splint armor draped in the thick furs and pelts of the Voltin indigenous tribes. His movements are deliberate and heavy, mimicking the Goliaths he was raised alongside. He carries a Warhammer that looks like a tool of survival rather than a soldier's weapon.",
+    "Valten is a rugged, imposing figure, a towering, undead skeletal warrior. Faint remnants of a frozen winter beard cling to his skull. He is clad in heavy iron splint armor draped heavily in thick, weather-beaten northern winter pelts. He carries Frost Maw, a Warhammer made from the remains of a baby Ice Dragon. The oversized, terrifying dragon skull acts as the heavy head of the weapon, completely devoid of any crafted metal. Valten's clawed skeletal left hand is wreathed in a swirling aura of black frost and dark magic, violently ripping ghostly, pale-blue spectral life essence from the dragon's bone marrow.",
 };
 
 export const backstory = `Born in the secluded town of Himberwear on the frozen island of Voltin, Valten was raised in a community where Goliaths and Humans live in simple harmony. As is the custom once every generation, Valten was chosen to leave his village and spend five years living among the Ancestral Giants in the northern hills.

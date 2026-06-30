@@ -74,7 +74,9 @@
 .background-panel__cards {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-md);
+  padding-top: 14px;
+  column-gap: var(--space-lg);
+  row-gap: calc(var(--space-lg) + 14px);
 }
 
 .background-panel__cards p {

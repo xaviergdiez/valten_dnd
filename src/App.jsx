@@ -1,7 +1,9 @@
-import { usePersistedState } from "./hooks/usePersistedState";
+import { useEffect, useState } from "react";
+import { usePersistedState, fetchRemoteState } from "./hooks/usePersistedState";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import {
   profile,
+  appearance,
   proficiencyBonusSeed,
   combatSeed,
   abilityScoresSeed,
@@ -13,7 +15,7 @@ import {
   treasureSeed,
 } from "./data/character";
 import { featsSeed } from "./data/feats";
-import { spellClassesSeed } from "./data/spells";
+import { spellClassesSeed, updateSpellCatalog } from "./data/spells";
 import { magicItemsSeed } from "./data/magicItems";
 import Header from "./components/Header";
 import getAbilitiesCards from "./components/AbilitiesPanel";
@@ -30,8 +32,28 @@ const TAB_ORDER = ["Combat", "Abilities & Skills", "Spells", "Equipment", "Featu
 
 const skillProficienciesSeed = Object.fromEntries(skillsSeed.map((s) => [s.name, s.proficient]));
 
+const characterProfileSeed = {
+  characterName: profile.name,
+  nickname: profile.nickname,
+  race: profile.race,
+  gender: "",
+  background: profile.background,
+  age: String(appearance.age),
+  height: appearance.height,
+  weight: appearance.weight,
+  eyes: appearance.eyes,
+  skin: appearance.skin,
+  hair: appearance.hair,
+  description: appearance.description,
+};
+
 export default function App() {
   const [classLevel, setClassLevel] = usePersistedState("classLevel", profile.classLevel);
+  // Not persisted — always starts from seed and gets overridden by config fetch,
+  // so stale profile data never gets stuck in localStorage.
+  const [characterProfile, setCharacterProfile] = useState(characterProfileSeed);
+  const [avatarUrls, setAvatarUrls] = usePersistedState("avatarUrls", { full: null, crop: null });
+  const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
   const [inspiration, setInspiration] = usePersistedState("inspiration", profile.inspiration);
 
   const [abilityScores, setAbilityScores] = usePersistedState("abilityScores", abilityScoresSeed);
@@ -65,6 +87,71 @@ export default function App() {
   const [notes, setNotes] = usePersistedState("notes", "");
   const [treasure, setTreasure] = usePersistedState("treasure", treasureSeed);
   const [activeTab, setActiveTab] = usePersistedState("activeTab", TAB_ORDER[0]);
+
+  // Sheet config loads after session state hydrates so it always wins the race.
+  useEffect(() => {
+    fetchRemoteState().then(() =>
+      fetch("/api/config")
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null)
+        .then((cfg) => {
+          if (!cfg) return;
+          if (cfg.classLevel) setClassLevel(cfg.classLevel);
+          if (cfg.abilityScores) setAbilityScores(cfg.abilityScores);
+          if (cfg.proficiencyBonus != null) setProficiencyBonus(cfg.proficiencyBonus);
+          if (cfg.saveProficiencies) setSaveProficiencies(cfg.saveProficiencies);
+          if (cfg.skillProficiencies) setSkillProficiencies(cfg.skillProficiencies);
+          if (cfg.combatStats) setCombatStats(cfg.combatStats);
+          if (cfg.hpMax != null) setHpMax(cfg.hpMax);
+          if (cfg.hitDiceBase) setHitDice((prev) => ({ ...prev, count: cfg.hitDiceBase.count, die: cfg.hitDiceBase.die }));
+          if (cfg.attacksList) setAttacksList(cfg.attacksList);
+          if (cfg.currency) setCurrency(cfg.currency);
+          if (cfg.equipmentList) setEquipmentList(cfg.equipmentList);
+          if (cfg.featuresList) setFeaturesList(cfg.featuresList);
+          if (cfg.spellClasses && Object.keys(cfg.spellClasses).length > 0) {
+            setSpellClasses((prev) => {
+              const next = { ...prev };
+              for (const [key, cls] of Object.entries(cfg.spellClasses)) {
+                const hasKnown = Object.values(cls.knownByLevel ?? {}).some((arr) => arr.length > 0);
+                next[key] = {
+                  ...(prev[key] ?? {}),
+                  ...cls,
+                  // Fall back to seed's knownByLevel (not prev) when the sheet's
+                  // classes column is empty — prev may already be corrupted by a
+                  // prior bad sync, but the seed is always the correct baseline.
+                  knownByLevel: hasKnown ? cls.knownByLevel : (spellClassesSeed[key]?.knownByLevel ?? {}),
+                };
+              }
+              return next;
+            });
+          }
+          if (cfg.spellCards) updateSpellCatalog(cfg.spellCards);
+          if (cfg.characterProfile && cfg.characterProfile.characterName) {
+            setCharacterProfile((prev) => ({ ...prev, ...cfg.characterProfile }));
+          }
+          if (cfg.avatarUrls) setAvatarUrls(cfg.avatarUrls);
+        })
+    );
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleGenerateAvatar = async () => {
+    setIsGeneratingAvatar(true);
+    try {
+      const res = await fetch("/api/generate-avatar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profile: { ...characterProfile, classLevel } }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAvatarUrls(data.avatarUrls);
+      }
+    } catch (err) {
+      console.error("Avatar generation failed:", err);
+    } finally {
+      setIsGeneratingAvatar(false);
+    }
+  };
 
   const isWide = useMediaQuery("(min-width: 1100px)");
 
@@ -123,7 +210,7 @@ export default function App() {
       id: "background",
       tabGroup: "Background",
       wide: true,
-      content: <BackgroundPanel notes={notes} setNotes={setNotes} treasure={treasure} setTreasure={setTreasure} />,
+      content: <BackgroundPanel notes={notes} setNotes={setNotes} treasure={treasure} setTreasure={setTreasure} avatarUrls={avatarUrls} characterProfile={characterProfile} />,
     },
   ];
 
@@ -145,6 +232,10 @@ export default function App() {
           setClassLevel={setClassLevel}
           inspiration={inspiration}
           setInspiration={setInspiration}
+          characterProfile={characterProfile}
+          avatarUrls={avatarUrls}
+          onGenerateAvatar={handleGenerateAvatar}
+          isGeneratingAvatar={isGeneratingAvatar}
         />
 
         {!isWide && <TabNav tabs={TAB_ORDER} active={activeTab} onChange={setActiveTab} size="lg" />}

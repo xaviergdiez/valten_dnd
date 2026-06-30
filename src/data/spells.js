@@ -36,7 +36,7 @@ export const spellClassesSeed = {
     slots: [{ level: 1, total: 1 }],
     cantrips: ["Eldritch Blast", "Frostbite"],
     knownByLevel: {
-      1: ["Armor of Agathys"],
+      1: ["Armor of Agathys", "Hex"],
     },
   },
 };
@@ -47,7 +47,7 @@ export const spellClassesSeed = {
 export const alwaysPreparedSpells = ["Detect Necrosis", "Siphon Bolt", "Protection from Necrosis"];
 
 // All illustrated/known spell cards, in source order.
-export const spellCards = [
+let _spellCards = [
   { title: "Chill Touch", cardLevel: "Cantrip", school: "Necromancy", castTime: "1 Action", range: "120 ft", components: "V, S", duration: "1 round", description: `"The mountain wind spares no one." Ranged spell attack (+9). 2d8 Necrotic damage. Target can't heal until your next turn.` },
   { title: "Eldritch Blast", cardLevel: "Cantrip", school: "Evocation", castTime: "1 Action", range: "120 ft", components: "V, S", duration: "Instantaneous", description: `"Tethered to rock and ice, of the earth and onto light." Hurl 2 spears of black ice. Ranged spell attack (+8). 1d10 Force per hit.` },
   { title: "Frostbite", cardLevel: "Cantrip", school: "Evocation", castTime: "1 Action", range: "60 ft", components: "V, S", duration: "Instantaneous", description: `"I stand atop the mountain's peak where many worlds meet." CON Save. 2d6 Cold dmg, and target has Disadvantage on its next weapon attack.` },
@@ -85,6 +85,14 @@ export const spellCards = [
   { title: "Silence", cardLevel: "2", school: "Illusion", castTime: "1 Action", range: "120 ft", components: "V, S", duration: "10 min (C)", description: `No sound can be created within or pass through a 20-ft-radius sphere centered on a point you choose. Deafened creatures are immune to thunder damage within it.` },
 ].map((card) => ({ ...card, alwaysPrepared: alwaysPreparedSpells.includes(card.title) }));
 
+// Live-exported binding so updateSpellCatalog() replaces the catalog and callers
+// that import `spellCards` directly see the new array (ES module live binding).
+export { _spellCards as spellCards };
+
+export function updateSpellCatalog(cards) {
+  _spellCards = cards;
+}
+
 export function findSpellCard(name) {
-  return spellCards.find((c) => c.title === name);
+  return _spellCards.find((c) => c.title === name);
 }
