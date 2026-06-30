@@ -1,4 +1,4 @@
-import { put } from "@vercel/blob";
+import { put, get } from "@vercel/blob";
 
 const CONFIG_PATHNAME = "valten-sheet-config.json";
 
@@ -14,8 +14,21 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Read existing config so fields not managed by the sheet (e.g. avatarUrls)
+    // are preserved across syncs rather than wiped.
+    let existing = {};
+    try {
+      const blob = await get(CONFIG_PATHNAME, { access: "private" });
+      if (blob && blob.statusCode === 200) {
+        existing = JSON.parse(await new Response(blob.stream).text());
+      }
+    } catch {
+      // Blob doesn't exist yet — start fresh.
+    }
+
     const sheets = req.body ?? {};
-    const config = buildConfig(sheets);
+    const config = { ...existing, ...buildConfig(sheets) };
+
     await put(CONFIG_PATHNAME, JSON.stringify(config), {
       access: "private",
       addRandomSuffix: false,
