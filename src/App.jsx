@@ -87,7 +87,7 @@ export default function App() {
           if (cfg.currency) setCurrency(cfg.currency);
           if (cfg.equipmentList) setEquipmentList(cfg.equipmentList);
           if (cfg.featuresList) setFeaturesList(cfg.featuresList);
-          if (cfg.spellClasses) setSpellClasses(cfg.spellClasses);
+          if (cfg.spellClasses && Object.keys(cfg.spellClasses).length > 0) setSpellClasses(cfg.spellClasses);
           if (cfg.spellCards) updateSpellCatalog(cfg.spellCards);
         })
     );

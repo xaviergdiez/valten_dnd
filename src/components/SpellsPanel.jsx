@@ -116,6 +116,7 @@ export default function SpellsPanel({
 
   const renderClass = (classKey) => {
     const cls = spellClasses[classKey];
+    if (!cls) return null;
     return (
       <div className="spells-panel__class">
         <SectionCard title="Spellcasting">

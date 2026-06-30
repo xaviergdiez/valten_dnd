@@ -120,8 +120,10 @@ function buildConfig(sheets) {
   // Spells + spellcasting info + spell slots
   if (sheets.spellcasting?.length || sheets.spellSlots?.length || sheets.spells?.length) {
     const { spellClasses, spellCards } = buildSpellData(sheets);
-    config.spellClasses = spellClasses;
-    config.spellCards = spellCards;
+    // Only overwrite if at least one class was parsed — an empty object would
+    // crash SpellsPanel by replacing the seed's cleric/warlock entries.
+    if (Object.keys(spellClasses).length > 0) config.spellClasses = spellClasses;
+    if (spellCards.length > 0) config.spellCards = spellCards;
   }
 
   return config;
