@@ -9,6 +9,9 @@
 
 .card-masonry__item {
   break-inside: avoid;
+  /* Top padding tells the column engine to allocate space for the badge that
+     protrudes above each card, preventing Safari from placing a break there. */
+  padding-top: 14px;
   margin-bottom: var(--space-lg);
 }
 
