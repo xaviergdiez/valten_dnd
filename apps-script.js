@@ -16,6 +16,11 @@
  * ┌─────────────┬──────────────────────────────────────────────────────────────┐
  * │ Tab name    │ Columns (row 1 = headers, data from row 2 on)                │
  * ├─────────────┼──────────────────────────────────────────────────────────────┤
+ * │ Profile     │ key  │ value                                                 │
+ * │             │ (keys: characterName, nickname, race, gender, background,    │
+ * │             │  age, height, weight, eyes, skin, hair, description)        │
+ * │             │ description is used as the avatar generation prompt base.   │
+ * ├─────────────┼──────────────────────────────────────────────────────────────┤
  * │ Stats       │ key  │ value                                                 │
  * │             │ (keys: str, dex, con, int, wis, cha, proficiency, hpMax,    │
  * │             │  ac, speed, initiative, hitDiceCount, hitDiceDie, classLevel)│
@@ -49,6 +54,7 @@
  */
 
 var TABS = [
+  "Profile",
   "Stats",
   "Saves",
   "Skills",
@@ -63,6 +69,7 @@ var TABS = [
 
 // Keys used in the payload match what /api/sync-sheet expects.
 var TAB_KEYS = {
+  "Profile": "profile",
   "Stats": "stats",
   "Saves": "saves",
   "Skills": "skills",

@@ -14,7 +14,7 @@ import "./BackgroundPanel.css";
 
 const TABS = ["Backstory", "Proficiencies & Languages", "Notes"];
 
-export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure }) {
+export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure, avatarUrls, characterProfile }) {
   const [tab, setTab] = useState("Backstory");
 
   const updateTreasure = (index) => (e) =>
@@ -42,11 +42,14 @@ export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure
       {tab === "Backstory" && (
         <div className="background-panel__backstory">
           <div className="background-panel__portrait">
-            <img src="/valten-full.jpg" alt="Valten, full body" />
+            <img
+              src={avatarUrls?.full || "/valten-full.jpg"}
+              alt={characterProfile?.characterName || "Character, full body"}
+            />
           </div>
           <div className="background-panel__backstory-text">
             <p className="background-panel__paragraph">{backstory}</p>
-            <p className="background-panel__paragraph">{appearance.description}</p>
+            <p className="background-panel__paragraph">{characterProfile?.description || appearance.description}</p>
 
             <div className="background-panel__grid">
               <div>

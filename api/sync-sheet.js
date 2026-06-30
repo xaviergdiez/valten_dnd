@@ -49,6 +49,25 @@ function toMap(rows, keyCol, valCol) {
 function buildConfig(sheets) {
   const config = {};
 
+  // Profile (key / value) — character identity fields for display and avatar generation
+  if (sheets.profile?.length) {
+    const p = toMap(sheets.profile, "key", "value");
+    config.characterProfile = {
+      characterName: String(p.characterName ?? ""),
+      nickname: String(p.nickname ?? ""),
+      race: String(p.race ?? ""),
+      gender: String(p.gender ?? ""),
+      background: String(p.background ?? ""),
+      age: String(p.age ?? ""),
+      height: String(p.height ?? ""),
+      weight: String(p.weight ?? ""),
+      eyes: String(p.eyes ?? ""),
+      skin: String(p.skin ?? ""),
+      hair: String(p.hair ?? ""),
+      description: String(p.description ?? ""),
+    };
+  }
+
   // Stats (key / value)
   if (sheets.stats?.length) {
     const s = toMap(sheets.stats, "key", "value");

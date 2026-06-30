@@ -27,7 +27,9 @@
 .spells-panel__items {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-md);
+  padding-top: 14px;
+  column-gap: var(--space-lg);
+  row-gap: calc(var(--space-lg) + 14px);
 }
 
 .spells-panel__info-grid {
