@@ -54,7 +54,9 @@
 }
 
 .spell-row__detail {
-  padding: 0 0 var(--space-md);
+  /* Top padding gives the SpellCard's protruding title banner room to sit
+     above the card border without overlapping the row header above it. */
+  padding: var(--space-lg) 0 var(--space-md);
 }
 
 .spell-row__missing {
