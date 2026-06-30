@@ -210,7 +210,7 @@ export default function App() {
       id: "background",
       tabGroup: "Background",
       wide: true,
-      content: <BackgroundPanel notes={notes} setNotes={setNotes} treasure={treasure} setTreasure={setTreasure} avatarUrls={avatarUrls} characterProfile={characterProfile} />,
+      content: <BackgroundPanel notes={notes} setNotes={setNotes} treasure={treasure} setTreasure={setTreasure} avatarUrls={avatarUrls} characterProfile={characterProfile} onGenerateAvatar={handleGenerateAvatar} isGeneratingAvatar={isGeneratingAvatar} />,
     },
   ];
 
@@ -234,7 +234,6 @@ export default function App() {
           setInspiration={setInspiration}
           characterProfile={characterProfile}
           avatarUrls={avatarUrls}
-          onGenerateAvatar={handleGenerateAvatar}
           isGeneratingAvatar={isGeneratingAvatar}
         />
 

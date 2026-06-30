@@ -15,7 +15,6 @@ export default function Header({
   setInspiration,
   characterProfile,
   avatarUrls,
-  onGenerateAvatar,
   isGeneratingAvatar,
 }) {
   const name = characterProfile?.characterName || "Character";
@@ -25,21 +24,15 @@ export default function Header({
 
   return (
     <header className="header">
-      <button
-        type="button"
-        className={`header__portrait ${isGeneratingAvatar ? "header__portrait--generating" : ""}`}
-        onClick={onGenerateAvatar}
-        title={isGeneratingAvatar ? "Generating…" : "Click to generate avatar with Gemini"}
-        aria-label="Generate avatar"
-      >
+      <div className={`header__portrait ${isGeneratingAvatar ? "header__portrait--generating" : ""}`}>
         <img
           src={cropUrl || "/valten-avatar.jpg"}
           alt={name}
         />
-        <span className="header__portrait-overlay" aria-hidden="true">
-          {isGeneratingAvatar ? "…" : "✦"}
-        </span>
-      </button>
+        {isGeneratingAvatar && (
+          <span className="header__portrait-overlay" aria-hidden="true">…</span>
+        )}
+      </div>
 
       <div className="header__identity">
         <h1 className="header__name">

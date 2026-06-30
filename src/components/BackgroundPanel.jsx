@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   appearance,
   backstory,
@@ -14,8 +14,13 @@ import "./BackgroundPanel.css";
 
 const TABS = ["Backstory", "Proficiencies & Languages", "Notes"];
 
-export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure, avatarUrls, characterProfile }) {
+export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure, avatarUrls, characterProfile, onGenerateAvatar, isGeneratingAvatar }) {
   const [tab, setTab] = useState("Backstory");
+  const dialogRef = useRef(null);
+
+  const openConfirm = () => dialogRef.current?.showModal();
+  const closeConfirm = () => dialogRef.current?.close();
+  const confirmGenerate = () => { closeConfirm(); onGenerateAvatar(); };
 
   const updateTreasure = (index) => (e) =>
     setTreasure((prev) => prev.map((t, i) => (i === index ? e.target.value : t)));
@@ -41,12 +46,39 @@ export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure
 
       {tab === "Backstory" && (
         <div className="background-panel__backstory">
-          <div className="background-panel__portrait">
-            <img
-              src={avatarUrls?.full || "/valten-full.jpg"}
-              alt={characterProfile?.characterName || "Character, full body"}
-            />
+          <div className="background-panel__portrait-wrap">
+            <div className="background-panel__portrait">
+              <img
+                src={avatarUrls?.full || "/valten-full.jpg"}
+                alt={characterProfile?.characterName || "Character, full body"}
+              />
+            </div>
+            <button
+              type="button"
+              className="background-panel__regen-btn"
+              onClick={openConfirm}
+              disabled={isGeneratingAvatar}
+            >
+              {isGeneratingAvatar ? "Generating…" : "↺ Regenerate Avatar"}
+            </button>
           </div>
+
+          <dialog ref={dialogRef} className="background-panel__confirm-dialog">
+            <p className="background-panel__confirm-title">Generate new avatar?</p>
+            <p className="background-panel__confirm-body">
+              This will create a new portrait for{" "}
+              <strong>{characterProfile?.characterName || "your character"}</strong> using Gemini AI.
+              Each generation uses API credits.
+            </p>
+            <div className="background-panel__confirm-actions">
+              <button type="button" className="background-panel__confirm-cancel" onClick={closeConfirm}>
+                Cancel
+              </button>
+              <button type="button" className="background-panel__confirm-ok" onClick={confirmGenerate}>
+                Generate ✦
+              </button>
+            </div>
+          </dialog>
           <div className="background-panel__backstory-text">
             <p className="background-panel__paragraph">{backstory}</p>
             <p className="background-panel__paragraph">{characterProfile?.description || appearance.description}</p>

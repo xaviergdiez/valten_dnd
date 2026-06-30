@@ -19,8 +19,6 @@
   overflow: hidden;
   border: var(--border-width) solid var(--color-border);
   background: var(--color-ink);
-  cursor: pointer;
-  padding: 0;
 }
 
 .header__portrait img {
@@ -39,14 +37,7 @@
   background: rgba(0, 0, 0, 0.55);
   color: var(--color-gold);
   font-size: 20px;
-  opacity: 0;
-  transition: opacity 0.15s ease;
   pointer-events: none;
-}
-
-.header__portrait:hover .header__portrait-overlay,
-.header__portrait--generating .header__portrait-overlay {
-  opacity: 1;
 }
 
 .header__portrait--generating img {

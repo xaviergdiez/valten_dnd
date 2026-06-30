@@ -27,9 +27,16 @@
   gap: var(--space-lg);
 }
 
-.background-panel__portrait {
+.background-panel__portrait-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
   width: 100%;
   max-width: 320px;
+}
+
+.background-panel__portrait {
+  width: 100%;
   overflow: hidden;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border-light);
@@ -39,6 +46,93 @@
   width: 100%;
   height: auto;
   display: block;
+}
+
+.background-panel__regen-btn {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.background-panel__regen-btn:hover:not(:disabled) {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+}
+
+.background-panel__regen-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.background-panel__confirm-dialog {
+  border: var(--border-width-lg) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: var(--space-xl);
+  max-width: 340px;
+  width: 90vw;
+  box-shadow: var(--shadow-card);
+}
+
+.background-panel__confirm-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.background-panel__confirm-title {
+  margin: 0 0 var(--space-sm);
+  font-family: var(--font-display);
+  font-size: 16px;
+}
+
+.background-panel__confirm-body {
+  margin: 0 0 var(--space-lg);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.background-panel__confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}
+
+.background-panel__confirm-cancel,
+.background-panel__confirm-ok {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+.background-panel__confirm-cancel {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.background-panel__confirm-cancel:hover {
+  border-color: var(--color-text-muted);
+}
+
+.background-panel__confirm-ok {
+  background: var(--color-gold);
+  border: 1px solid var(--color-gold);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.background-panel__confirm-ok:hover {
+  opacity: 0.85;
 }
 
 .background-panel__backstory-text {
