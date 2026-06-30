@@ -1,4 +1,5 @@
-import { usePersistedState } from "./hooks/usePersistedState";
+import { useEffect } from "react";
+import { usePersistedState, fetchRemoteState } from "./hooks/usePersistedState";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import {
   profile,
@@ -13,7 +14,7 @@ import {
   treasureSeed,
 } from "./data/character";
 import { featsSeed } from "./data/feats";
-import { spellClassesSeed } from "./data/spells";
+import { spellClassesSeed, updateSpellCatalog } from "./data/spells";
 import { magicItemsSeed } from "./data/magicItems";
 import Header from "./components/Header";
 import getAbilitiesCards from "./components/AbilitiesPanel";
@@ -65,6 +66,32 @@ export default function App() {
   const [notes, setNotes] = usePersistedState("notes", "");
   const [treasure, setTreasure] = usePersistedState("treasure", treasureSeed);
   const [activeTab, setActiveTab] = usePersistedState("activeTab", TAB_ORDER[0]);
+
+  // Sheet config loads after session state hydrates so it always wins the race.
+  useEffect(() => {
+    fetchRemoteState().then(() =>
+      fetch("/api/config")
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null)
+        .then((cfg) => {
+          if (!cfg) return;
+          if (cfg.classLevel) setClassLevel(cfg.classLevel);
+          if (cfg.abilityScores) setAbilityScores(cfg.abilityScores);
+          if (cfg.proficiencyBonus != null) setProficiencyBonus(cfg.proficiencyBonus);
+          if (cfg.saveProficiencies) setSaveProficiencies(cfg.saveProficiencies);
+          if (cfg.skillProficiencies) setSkillProficiencies(cfg.skillProficiencies);
+          if (cfg.combatStats) setCombatStats(cfg.combatStats);
+          if (cfg.hpMax != null) setHpMax(cfg.hpMax);
+          if (cfg.hitDiceBase) setHitDice((prev) => ({ ...prev, count: cfg.hitDiceBase.count, die: cfg.hitDiceBase.die }));
+          if (cfg.attacksList) setAttacksList(cfg.attacksList);
+          if (cfg.currency) setCurrency(cfg.currency);
+          if (cfg.equipmentList) setEquipmentList(cfg.equipmentList);
+          if (cfg.featuresList) setFeaturesList(cfg.featuresList);
+          if (cfg.spellClasses) setSpellClasses(cfg.spellClasses);
+          if (cfg.spellCards) updateSpellCatalog(cfg.spellCards);
+        })
+    );
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isWide = useMediaQuery("(min-width: 1100px)");
 
