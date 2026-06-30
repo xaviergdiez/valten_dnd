@@ -1,33 +1,42 @@
 .header {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 200px 1fr;
   grid-template-rows: auto auto;
-  gap: var(--space-md) var(--space-lg);
-  padding: var(--space-lg);
+  column-gap: var(--space-xl);
+  row-gap: var(--space-md);
+  /* No vertical or left padding — portrait fills top-to-bottom and left-to-edge */
+  padding: 0 var(--space-lg) 0 0;
   background: var(--color-surface);
   border: var(--border-width-lg) solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
-/* Portrait spans both rows on desktop so identity sits beside it */
+/* Portrait spans both rows, full height — left corners match inner radius of card */
 .header__portrait {
+  grid-column: 1;
   grid-row: 1 / 3;
+  align-self: stretch;
   position: relative;
-  width: 100px;
-  height: 100px;
-  flex-shrink: 0;
-  border-radius: 999px;
+  width: 200px;
+  min-height: 160px;
+  /* Inner corner = outer radius minus border width */
+  border-radius: calc(var(--radius-md) - var(--border-width-lg)) 0 0 calc(var(--radius-md) - var(--border-width-lg));
   overflow: hidden;
-  border: 3px solid var(--color-gold);
+  border: none;
   background: var(--color-ink);
-  box-shadow: 0 0 0 1px var(--color-border), 0 4px 12px rgba(0, 0, 0, 0.5);
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.4);
 }
 
 .header__portrait img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: top center;
   display: block;
 }
 
@@ -39,7 +48,7 @@
   justify-content: center;
   background: rgba(0, 0, 0, 0.55);
   color: var(--color-gold);
-  font-size: 20px;
+  font-size: 24px;
   pointer-events: none;
 }
 
@@ -48,15 +57,18 @@
 }
 
 .header__identity {
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   min-width: 0;
+  padding-top: var(--space-lg);
 }
 
 .header__name {
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: 26px;
   color: var(--color-text);
   margin: 0;
   white-space: nowrap;
@@ -73,8 +85,8 @@
 }
 
 .header__subline {
-  margin: 3px 0 0;
-  font-size: 13px;
+  margin: 4px 0 0;
+  font-size: 14px;
   color: var(--color-text);
 }
 
@@ -82,19 +94,22 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-top: 4px;
-  font-size: 11px;
+  margin-top: 6px;
+  font-size: 12px;
   color: var(--color-text-muted);
 }
 
 input.header__classlevel-input {
-  width: 140px;
-  font-size: 13px;
+  width: 150px;
+  font-size: 14px;
 }
 
-/* Stat row fills the second column of row 2 */
+/* Stat row anchored to second row, right column */
 .header > .stat-row {
   grid-column: 2;
+  grid-row: 2;
+  align-self: end;
+  margin-bottom: var(--space-lg);
 }
 
 .header__hp-edit {
@@ -108,29 +123,52 @@ input.header__classlevel-input {
   width: 26px;
 }
 
-/* ── Mobile ───────────────────────────────────────────────────────────────── */
-@media (max-width: 640px) {
+/* ── Tablet ───────────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
   .header {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    text-align: center;
-    gap: var(--space-md);
+    grid-template-columns: 150px 1fr;
+    column-gap: var(--space-lg);
   }
 
   .header__portrait {
+    width: 150px;
+    border-radius: calc(var(--radius-md) - var(--border-width-lg)) 0 0 calc(var(--radius-md) - var(--border-width-lg));
+  }
+}
+
+/* ── Mobile ───────────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .header {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    column-gap: 0;
+    row-gap: var(--space-md);
+    padding: 0 var(--space-md) var(--space-lg);
+  }
+
+  /* Bleed portrait to card edges despite the header's side padding */
+  .header__portrait {
+    grid-column: 1;
     grid-row: 1;
-    width: 120px;
-    height: 120px;
-    margin: 0 auto;
+    width: calc(100% + 2 * var(--space-md));
+    margin-left: calc(-1 * var(--space-md));
+    height: 280px;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
   }
 
   .header__identity {
+    grid-column: 1;
     grid-row: 2;
     align-items: center;
+    text-align: center;
+    padding: 0 var(--space-lg);
   }
 
   .header__name {
-    font-size: 22px;
+    font-size: 24px;
+    white-space: normal;
   }
 
   .header__inspiration {
