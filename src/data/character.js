@@ -23,7 +23,7 @@ export const combatSeed = {
   hpMax: 49,
   hpCurrentDefault: 49,
   hpTempDefault: 0,
-  hitDice: { count: 6, die: 8 },
+  hitDice: { count: 8, die: 8 },
   deathSaves: { successes: 0, failures: 0 },
 };
 
@@ -52,7 +52,7 @@ export const skillsSeed = [
   { name: "Arcana", ability: "int", proficient: false },
   { name: "Athletics", ability: "str", proficient: true },
   { name: "Deception", ability: "cha", proficient: false },
-  { name: "History", ability: "int", proficient: false },
+  { name: "History", ability: "int", proficient: true },
   { name: "Insight", ability: "wis", proficient: true },
   { name: "Intimidation", ability: "cha", proficient: false },
   { name: "Investigation", ability: "int", proficient: false },
@@ -61,7 +61,7 @@ export const skillsSeed = [
   { name: "Perception", ability: "wis", proficient: true },
   { name: "Performance", ability: "cha", proficient: false },
   { name: "Persuasion", ability: "cha", proficient: false },
-  { name: "Religion", ability: "int", proficient: false },
+  { name: "Religion", ability: "int", proficient: true },
   { name: "Sleight of Hand", ability: "dex", proficient: false },
   { name: "Stealth", ability: "dex", proficient: false },
   { name: "Survival", ability: "wis", proficient: true },

@@ -36,7 +36,7 @@ export const spellClassesSeed = {
     slots: [{ level: 1, total: 1 }],
     cantrips: ["Eldritch Blast", "Frostbite"],
     knownByLevel: {
-      1: ["Armor of Agathys"],
+      1: ["Armor of Agathys", "Hex"],
     },
   },
 };
