@@ -46,14 +46,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.55);
-  color: var(--color-gold);
-  font-size: 24px;
+  background: rgba(0, 0, 0, 0.6);
   pointer-events: none;
 }
 
 .header__portrait--generating img {
-  opacity: 0.4;
+  opacity: 0.3;
+}
+
+@keyframes portrait-spin {
+  to { transform: rotate(360deg); }
+}
+
+.header__portrait-spinner {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--color-gold);
+  border-radius: 50%;
+  animation: portrait-spin 0.9s linear infinite;
 }
 
 .header__identity {

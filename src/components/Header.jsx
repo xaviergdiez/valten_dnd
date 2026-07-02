@@ -30,7 +30,9 @@ export default function Header({
           alt={name}
         />
         {isGeneratingAvatar && (
-          <span className="header__portrait-overlay" aria-hidden="true">…</span>
+          <span className="header__portrait-overlay" aria-label="Generating avatar">
+            <span className="header__portrait-spinner" aria-hidden="true" />
+          </span>
         )}
       </div>
 
