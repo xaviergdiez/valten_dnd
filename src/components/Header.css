@@ -38,6 +38,7 @@
   object-fit: cover;
   object-position: top center;
   display: block;
+  transform: scale(1.5);
 }
 
 .header__portrait-overlay {
