@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 
 const PREFIX = "valten-sheet:";
 const API_URL = "/api/state";
-const FLUSH_DELAY_MS = 1500;
+const FLUSH_DELAY_MS = 800;
 
-// Module-level (not per-hook) so the ~20 fields on the sheet share one
-// fetch-on-load and one debounced save, instead of each firing its own.
+// Module-level so the ~20 fields on the sheet share one fetch and one debounced save.
 let remoteHydrated = false;
 let remoteStatePromise = null;
 let flushTimer = null;
@@ -38,21 +37,33 @@ export function fetchRemoteState() {
   return remoteStatePromise;
 }
 
-function scheduleRemoteFlush() {
-  // Don't push to remote until the initial load has resolved — otherwise a
-  // fresh device/browser would flush its blank defaults and clobber data
-  // already saved from another device before the hydration fetch returns.
+function flushNow() {
   if (!remoteHydrated) return;
   clearTimeout(flushTimer);
-  flushTimer = setTimeout(() => {
-    fetch(API_URL, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(getAllLocalState()),
-    }).catch(() => {
-      // offline or API unavailable — local copy still works
-    });
-  }, FLUSH_DELAY_MS);
+  // keepalive: true lets the request survive page unload
+  fetch(API_URL, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    keepalive: true,
+    body: JSON.stringify(getAllLocalState()),
+  }).catch(() => {});
+}
+
+function scheduleRemoteFlush() {
+  // Don't push to remote until the initial load has resolved — otherwise a
+  // fresh device would flush blank defaults and clobber data from another device.
+  if (!remoteHydrated) return;
+  clearTimeout(flushTimer);
+  flushTimer = setTimeout(flushNow, FLUSH_DELAY_MS);
+}
+
+// Flush immediately when the tab goes to background or the page is unloading,
+// so changes aren't lost when the user closes the browser before the debounce fires.
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushNow();
+  });
+  window.addEventListener("pagehide", flushNow);
 }
 
 export function usePersistedState(key, defaultValue) {
