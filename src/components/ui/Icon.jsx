@@ -2,6 +2,8 @@ const PATHS = {
   plus: "M6 1v10M1 6h10",
   minus: "M1 6h10",
   close: "M2 2l8 8M10 2l-8 8",
+  edit: "M2 10L9 3M9 1L11 3M2 10L1 11",
+  chevron: "M2 4l4 4 4-4",
 };
 
 // Text glyphs (−, +, ×) render with inconsistent optical centering across

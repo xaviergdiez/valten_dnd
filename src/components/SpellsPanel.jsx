@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { findSpellCard } from "../data/spells";
 import CheckboxGroup from "./ui/CheckboxGroup";
+import Icon from "./ui/Icon";
 import NumberInput from "./ui/NumberInput";
 import SpellRow from "./SpellRow";
 import MagicItemCard from "./MagicItemCard";
@@ -74,6 +75,12 @@ export default function SpellsPanel({
       if (nextLevel > 9) return c;
       return { ...c, slots: [...c.slots, { level: nextLevel, total: 1 }], knownByLevel: { ...c.knownByLevel, [nextLevel]: [] } };
     });
+
+  const removeSlotLevel = (classKey, level) =>
+    updateClass(classKey, (c) => ({
+      ...c,
+      slots: c.slots.filter((s) => s.level !== level),
+    }));
 
   const renameCantrip = (classKey, index, oldName, newName) => {
     renameSpell(oldName, newName);
@@ -158,6 +165,14 @@ export default function SpellsPanel({
                   used={slotsUsed[`${classKey}:${slot.level}`] ?? 0}
                   onChange={(n) => setSlotsUsed((prev) => ({ ...prev, [`${classKey}:${slot.level}`]: n }))}
                 />
+                <button
+                  type="button"
+                  className="icon-button"
+                  onClick={() => removeSlotLevel(classKey, slot.level)}
+                  aria-label={`Remove level ${slot.level} slots`}
+                >
+                  <Icon name="close" />
+                </button>
               </div>
             ))}
           </div>

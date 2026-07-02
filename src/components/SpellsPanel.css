@@ -51,11 +51,24 @@
 }
 
 .spells-panel__slot-row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-xs) var(--space-sm);
   padding-bottom: var(--space-sm);
   border-bottom: 1px solid var(--color-border-light);
+}
+
+.spells-panel__slot-row .spells-panel__slot-total {
+  grid-column: 1;
+}
+
+.spells-panel__slot-row .checkbox-group {
+  grid-column: 2;
+}
+
+.spells-panel__slot-row .icon-button {
+  grid-column: 3;
 }
 
 .spells-panel__slot-row:last-child {

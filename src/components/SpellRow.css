@@ -11,14 +11,15 @@
   align-items: center;
   gap: var(--space-sm);
   padding: var(--space-xs) 0;
+  cursor: pointer;
+  user-select: none;
 }
 
-.spell-row__expand {
+.spell-row__actions {
   display: flex;
   align-items: center;
-  padding: var(--space-xs);
-  border: none;
-  background: transparent;
+  gap: 2px;
+  margin-left: auto;
 }
 
 .spell-row__name {
@@ -44,9 +45,11 @@
 }
 
 .spell-row__chevron {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   color: var(--color-text-muted);
   transition: transform 0.15s ease;
+  flex-shrink: 0;
 }
 
 .spell-row__chevron--open {
