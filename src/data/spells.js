@@ -85,12 +85,23 @@ let _spellCards = [
   { title: "Silence", cardLevel: "2", school: "Illusion", castTime: "1 Action", range: "120 ft", components: "V, S", duration: "10 min (C)", description: `No sound can be created within or pass through a 20-ft-radius sphere centered on a point you choose. Deafened creatures are immune to thunder damage within it.` },
 ].map((card) => ({ ...card, alwaysPrepared: alwaysPreparedSpells.includes(card.title) }));
 
-// Live-exported binding so updateSpellCatalog() replaces the catalog and callers
+// Live-exported binding so updateSpellCatalog() updates the catalog and callers
 // that import `spellCards` directly see the new array (ES module live binding).
 export { _spellCards as spellCards };
 
 export function updateSpellCatalog(cards) {
-  _spellCards = cards;
+  // Merge incoming cards into the existing catalog — override by title, append new.
+  // Never replace the whole array, or hardcoded cards not in the sheet would vanish.
+  const overrides = new Map(cards.map((c) => [c.title, c]));
+  const seen = new Set();
+  const merged = _spellCards.map((c) => {
+    seen.add(c.title);
+    return overrides.get(c.title) ?? c;
+  });
+  for (const c of cards) {
+    if (!seen.has(c.title)) merged.push(c);
+  }
+  _spellCards = merged;
 }
 
 export function findSpellCard(name) {
