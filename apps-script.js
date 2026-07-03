@@ -170,6 +170,17 @@ function syncFromApp() {
   var sheet = ss.getSheetByName("Custom Spells");
   if (!sheet) sheet = ss.insertSheet("Custom Spells");
 
+  // Safety guard: if the API returned 0 rows but the sheet already has spell
+  // data, abort rather than clearing. A legitimate 0-row result is only
+  // expected when the sheet is also empty (or the user has no custom spells).
+  if (rows.length === 0) {
+    var existingRows = sheet.getLastRow();
+    if (existingRows > 1) {
+      Logger.log("ABORTED: API returned 0 rows but sheet has " + (existingRows - 1) + " existing spells. Not clearing.");
+      return;
+    }
+  }
+
   sheet.clearContents();
 
   var headers = ["spell_name", "class", "level", "range", "components", "duration",

@@ -19,8 +19,12 @@ export default async function handler(req, res) {
     let existing = {};
     try {
       const blob = await get(CONFIG_PATHNAME, { access: "private" });
-      if (blob && blob.statusCode === 200) {
-        existing = JSON.parse(await new Response(blob.stream).text());
+      if (blob && blob.statusCode === 200 && blob.stream) {
+        const chunks = [];
+        for await (const chunk of blob.stream) {
+          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        }
+        existing = JSON.parse(Buffer.concat(chunks).toString("utf-8"));
       }
     } catch {
       // Blob doesn't exist yet — start fresh.

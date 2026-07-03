@@ -6,11 +6,15 @@ const CONFIG_PATHNAME = "valten-sheet-config.json";
 async function readBlob(pathname) {
   try {
     const blob = await get(pathname, { access: "private" });
-    if (blob?.statusCode === 200) {
-      return JSON.parse(await new Response(blob.stream).text());
+    if (!blob || blob.statusCode !== 200 || !blob.stream) return {};
+    const chunks = [];
+    for await (const chunk of blob.stream) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
     }
-  } catch {}
-  return {};
+    return JSON.parse(Buffer.concat(chunks).toString("utf-8"));
+  } catch {
+    return {};
+  }
 }
 
 export default async function handler(req, res) {
