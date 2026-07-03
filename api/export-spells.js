@@ -33,9 +33,43 @@ export default async function handler(req, res) {
     readBlob(CONFIG_PATHNAME),
   ]);
 
-  // State blob has the user's latest edits; config is the sheet-synced baseline.
-  const spellClasses = state.spellClasses ?? config.spellClasses ?? {};
-  const customCards = state.customSpellCards ?? {};
+  // Union spellClasses from state and config so class assignments survive even
+  // when syncToApp ran after the last app session (state might not reflect it yet).
+  const stateClasses = state.spellClasses ?? {};
+  const configClasses = config.spellClasses ?? {};
+  const allClassKeys = new Set([...Object.keys(stateClasses), ...Object.keys(configClasses)]);
+  const spellClasses = {};
+  for (const key of allClassKeys) {
+    const sc = stateClasses[key] ?? {};
+    const cc = configClasses[key] ?? {};
+    const allLevels = new Set([
+      ...Object.keys(sc.knownByLevel ?? {}),
+      ...Object.keys(cc.knownByLevel ?? {}),
+    ]);
+    const knownByLevel = {};
+    for (const lvl of allLevels) {
+      knownByLevel[lvl] = [
+        ...new Set([...(sc.knownByLevel?.[lvl] ?? []), ...(cc.knownByLevel?.[lvl] ?? [])]),
+      ];
+    }
+    spellClasses[key] = {
+      label: sc.label ?? cc.label ?? key,
+      cantrips: [...new Set([...(sc.cantrips ?? []), ...(cc.cantrips ?? [])])],
+      knownByLevel,
+    };
+  }
+
+  // Card data sources (in priority order):
+  // 1. customSpellCards in state — spells added / edited via the in-app picker
+  // 2. spellCards in config   — spells previously imported from the Custom Spells sheet tab
+  // State takes priority so in-app edits are preserved; config fills the gap for
+  // spells that only exist in the sheet and never went through the app picker.
+  const configCardMap = {};
+  for (const card of config.spellCards ?? []) {
+    if (card.title) configCardMap[card.title] = card;
+  }
+  const stateCardMap = state.customSpellCards ?? {};
+  const allCustomCards = { ...configCardMap, ...stateCardMap };
 
   // Build a map: spell name → { level, classes[] }
   // Use the human-readable label ("Cleric", "Warlock") so the sheet's dropdown
@@ -54,8 +88,8 @@ export default async function handler(req, res) {
     }
   }
 
-  // Export only spells that have a custom card entry AND a class assignment.
-  const rows = Object.entries(customCards)
+  // Export spells that have card data AND a class assignment.
+  const rows = Object.entries(allCustomCards)
     .filter(([name]) => spellMeta[name])
     .map(([name, card]) => {
       const { level, classes } = spellMeta[name];
