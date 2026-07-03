@@ -149,7 +149,7 @@ export default function App() {
           if (cfg.characterProfile && cfg.characterProfile.characterName) {
             setCharacterProfile((prev) => ({ ...prev, ...cfg.characterProfile }));
           }
-          if (cfg.avatarUrls) setAvatarUrls(cfg.avatarUrls);
+          if (cfg.avatarUrls) setAvatarUrls((prev) => (prev?.full ? prev : cfg.avatarUrls));
         })
     );
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
