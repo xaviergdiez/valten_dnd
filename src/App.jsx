@@ -114,13 +114,31 @@ export default function App() {
               const next = { ...prev };
               for (const [key, cls] of Object.entries(cfg.spellClasses)) {
                 const hasKnown = Object.values(cls.knownByLevel ?? {}).some((arr) => arr.length > 0);
+                const baseKnown = hasKnown ? cls.knownByLevel : (spellClassesSeed[key]?.knownByLevel ?? {});
+
+                // Union merge: start from config baseline, then add any levels/spells
+                // that exist only in prev (added in-app since last sheet sync).
+                const mergedKnown = {};
+                const allLevels = new Set([
+                  ...Object.keys(baseKnown),
+                  ...Object.keys(prev[key]?.knownByLevel ?? {}),
+                ]);
+                for (const lvl of allLevels) {
+                  const fromConfig = baseKnown[lvl] ?? [];
+                  const fromPrev = prev[key]?.knownByLevel?.[lvl] ?? [];
+                  mergedKnown[lvl] = [...new Set([...fromConfig, ...fromPrev])];
+                }
+
+                // Union cantrips too
+                const mergedCantrips = [
+                  ...new Set([...(cls.cantrips ?? []), ...(prev[key]?.cantrips ?? [])]),
+                ];
+
                 next[key] = {
                   ...(prev[key] ?? {}),
                   ...cls,
-                  // Fall back to seed's knownByLevel (not prev) when the sheet's
-                  // classes column is empty — prev may already be corrupted by a
-                  // prior bad sync, but the seed is always the correct baseline.
-                  knownByLevel: hasKnown ? cls.knownByLevel : (spellClassesSeed[key]?.knownByLevel ?? {}),
+                  knownByLevel: mergedKnown,
+                  cantrips: mergedCantrips,
                 };
               }
               return next;
