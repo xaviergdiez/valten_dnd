@@ -6,6 +6,10 @@
   box-shadow: var(--shadow-card);
   width: min(420px, 94vw);
   max-height: 70vh;
+  /* flex only when open — otherwise overrides dialog's default display:none */
+}
+
+dialog[open].spell-picker {
   display: flex;
   flex-direction: column;
 }

@@ -112,10 +112,11 @@ export default function SpellsPanel({
       }));
     }
     // Pre-populate the card from the database entry
+    const cardLevel = String(spell.cardLevel ?? "") === "0" ? "Cantrip" : spell.cardLevel;
     setCustomCards((prev) => ({
       ...prev,
       [spell.name]: {
-        cardLevel: spell.cardLevel,
+        cardLevel,
         school: spell.school,
         castTime: spell.castTime,
         range: spell.range,

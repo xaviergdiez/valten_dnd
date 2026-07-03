@@ -142,6 +142,61 @@ function syncToApp() {
   Logger.log("Sync OK: " + response.getContentText());
 }
 
+/**
+ * Reads custom spells from the app and writes them into the Custom Spells tab.
+ * Run this before syncToApp() to keep the sheet in sync with in-app additions.
+ */
+function syncFromApp() {
+  var props = PropertiesService.getScriptProperties();
+  var secret = props.getProperty("SYNC_SECRET");
+  var webhookUrl = props.getProperty("WEBHOOK_URL");
+  var baseUrl = webhookUrl.replace("/api/sync-sheet", "");
+
+  var response = UrlFetchApp.fetch(baseUrl + "/api/export-spells", {
+    method: "get",
+    headers: { Authorization: "Bearer " + secret },
+    muteHttpExceptions: true,
+  });
+
+  if (response.getResponseCode() !== 200) {
+    throw new Error("Export failed: HTTP " + response.getResponseCode() + " — " + response.getContentText());
+  }
+
+  var rows = JSON.parse(response.getContentText()).rows;
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Custom Spells");
+  if (!sheet) sheet = ss.insertSheet("Custom Spells");
+
+  sheet.clearContents();
+
+  var headers = ["spell_name", "level", "range", "components", "duration", "concentration",
+                 "casting_time", "ritual", "description", "material", "school", "classes"];
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+  if (rows.length > 0) {
+    var values = rows.map(function (r) {
+      return [
+        r.spell_name    || "",
+        r.level         || "",
+        r.range         || "",
+        r.components    || "",
+        r.duration      || "",
+        "",                      // concentration — not tracked separately
+        r.casting_time  || "",
+        "",                      // ritual — not tracked separately
+        r.description   || "",
+        "",                      // material — not tracked separately
+        r.school        || "",
+        r.classes       || "",
+      ];
+    });
+    sheet.getRange(2, 1, values.length, headers.length).setValues(values);
+  }
+
+  Logger.log("Wrote " + rows.length + " spells from app to Custom Spells tab.");
+}
+
 /** Run once to install a trigger that calls syncToApp() on any sheet change. */
 function createTrigger() {
   // Remove existing triggers for this function to avoid duplicates.

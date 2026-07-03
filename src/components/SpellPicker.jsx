@@ -15,8 +15,13 @@ const SpellPicker = forwardRef(function SpellPicker({ database = [], levelFilter
 
   const close = () => dialogRef.current?.close();
 
+  const normLevel = (v) => {
+    const s = String(v ?? "").toLowerCase().trim();
+    return s === "0" ? "cantrip" : s;
+  };
+
   const filtered = database.filter((s) => {
-    const matchesLevel = !levelFilter || s.cardLevel?.toLowerCase() === levelFilter.toLowerCase();
+    const matchesLevel = !levelFilter || normLevel(s.cardLevel) === normLevel(levelFilter);
     const matchesQuery = !query || s.name.toLowerCase().includes(query.toLowerCase());
     return matchesLevel && matchesQuery;
   });

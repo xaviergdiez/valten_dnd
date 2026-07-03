@@ -161,10 +161,14 @@ function buildConfig(sheets) {
   // SpellData tab — full spell database for the in-app picker
   // Expected columns: spell_name, level, school, casting_time, range, components, duration, description
   if (sheets.spellData?.length) {
+    const normalizeLevel = (v) => {
+      const s = String(v ?? "").trim();
+      return s === "0" ? "Cantrip" : s;
+    };
     config.spellDatabase = sheets.spellData
       .map((r) => ({
         name: String(r.spell_name || r.name || "").trim(),
-        cardLevel: String(r.level ?? "").trim(),
+        cardLevel: normalizeLevel(r.level),
         school: String(r.school ?? ""),
         castTime: String(r.casting_time ?? ""),
         range: String(r.range ?? ""),
