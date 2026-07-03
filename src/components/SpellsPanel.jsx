@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { findSpellCard } from "../data/spells";
 import CheckboxGroup from "./ui/CheckboxGroup";
 import Icon from "./ui/Icon";
 import NumberInput from "./ui/NumberInput";
 import SpellRow from "./SpellRow";
+import SpellPicker from "./SpellPicker";
 import MagicItemCard from "./MagicItemCard";
 import SectionCard from "./layout/SectionCard";
 import "./SpellsPanel.css";
@@ -26,11 +27,12 @@ export default function SpellsPanel({
   magicItems,
   setMagicItems,
   proficiencyBonus,
+  spellDatabase,
 }) {
   const [tab, setTab] = useState("Cleric");
-  // Names that should render expanded-for-authoring right after being added —
-  // session-only, doesn't need to persist across reloads.
   const [justAdded, setJustAdded] = useState(() => new Set());
+  const pickerRef = useRef(null);
+  const pickerContext = useRef(null); // { classKey, level: number | "cantrip" }
 
   const togglePrepared = (name) => setPrepared((prev) => ({ ...prev, [name]: !prev[name] }));
   const updateCustomCard = (name) => (updated) => setCustomCards((prev) => ({ ...prev, [name]: updated }));
@@ -88,10 +90,49 @@ export default function SpellsPanel({
   };
   const removeCantrip = (classKey, index) =>
     updateClass(classKey, (c) => ({ ...c, cantrips: c.cantrips.filter((_, i) => i !== index) }));
-  const addCantrip = (classKey) => {
+  const addCantripBlank = (classKey) => {
     const name = "New Cantrip";
     updateClass(classKey, (c) => ({ ...c, cantrips: [...c.cantrips, name] }));
     setJustAdded((prev) => new Set(prev).add(name));
+  };
+
+  const openPicker = (classKey, level) => {
+    pickerContext.current = { classKey, level };
+    pickerRef.current?.open();
+  };
+
+  const handlePickSpell = (spell) => {
+    const { classKey, level } = pickerContext.current;
+    if (level === "cantrip") {
+      updateClass(classKey, (c) => ({ ...c, cantrips: [...c.cantrips, spell.name] }));
+    } else {
+      updateClass(classKey, (c) => ({
+        ...c,
+        knownByLevel: { ...c.knownByLevel, [level]: [...(c.knownByLevel[level] ?? []), spell.name] },
+      }));
+    }
+    // Pre-populate the card from the database entry
+    setCustomCards((prev) => ({
+      ...prev,
+      [spell.name]: {
+        cardLevel: spell.cardLevel,
+        school: spell.school,
+        castTime: spell.castTime,
+        range: spell.range,
+        components: spell.components,
+        duration: spell.duration,
+        description: spell.description,
+      },
+    }));
+  };
+
+  const handleCustomSpell = () => {
+    const { classKey, level } = pickerContext.current;
+    if (level === "cantrip") {
+      addCantripBlank(classKey);
+    } else {
+      addKnownBlank(classKey, level);
+    }
   };
 
   const renameKnown = (classKey, level, index, oldName, newName) => {
@@ -106,9 +147,9 @@ export default function SpellsPanel({
       ...c,
       knownByLevel: { ...c.knownByLevel, [level]: c.knownByLevel[level].filter((_, i) => i !== index) },
     }));
-  const addKnown = (classKey, level) => {
+  const addKnownBlank = (classKey, level) => {
     const name = "New Spell";
-    updateClass(classKey, (c) => ({ ...c, knownByLevel: { ...c.knownByLevel, [level]: [...c.knownByLevel[level], name] } }));
+    updateClass(classKey, (c) => ({ ...c, knownByLevel: { ...c.knownByLevel, [level]: [...(c.knownByLevel[level] ?? []), name] } }));
     setJustAdded((prev) => new Set(prev).add(name));
   };
 
@@ -196,7 +237,7 @@ export default function SpellsPanel({
               />
             ))}
           </div>
-          <button type="button" className="add-row-button" onClick={() => addCantrip(classKey)}>
+          <button type="button" className="add-row-button" onClick={() => openPicker(classKey, "cantrip")}>
             + Add Cantrip
           </button>
         </SectionCard>
@@ -219,7 +260,7 @@ export default function SpellsPanel({
                 />
               ))}
             </div>
-            <button type="button" className="add-row-button" onClick={() => addKnown(classKey, level)}>
+            <button type="button" className="add-row-button" onClick={() => openPicker(classKey, level)}>
               + Add Spell
             </button>
           </SectionCard>
@@ -230,6 +271,12 @@ export default function SpellsPanel({
 
   return (
     <SectionCard className="spells-panel">
+      <SpellPicker
+        ref={pickerRef}
+        database={spellDatabase}
+        onPick={handlePickSpell}
+        onCustom={handleCustomSpell}
+      />
       <div className="spells-panel__tabs" role="tablist">
         {SUB_TABS.map((t) => (
           <button

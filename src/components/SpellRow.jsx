@@ -26,10 +26,19 @@ export default function SpellRow({
   const toggle = () => setExpanded((e) => !e);
   const stop = (e) => e.stopPropagation();
 
+  const [editing, setEditing] = useState(false);
+
   const startEditing = (e) => {
     e.stopPropagation();
+    setEditing(true);
+    setExpanded(true);
     setEditingName(true);
     setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
+  const stopEditing = () => {
+    setEditing(false);
+    setEditingName(false);
   };
 
   return (
@@ -76,7 +85,13 @@ export default function SpellRow({
       </div>
       {expanded && (
         <div className="spell-row__detail">
-          {card ? (
+          {editing && onChangeCustomCard ? (
+            <EditableSpellCard
+              card={customCard ?? card}
+              onChange={onChangeCustomCard}
+              onDone={stopEditing}
+            />
+          ) : card ? (
             <SpellCard {...card} />
           ) : isCustom ? (
             <EditableSpellCard card={customCard} onChange={onChangeCustomCard} onDone={() => setExpanded(false)} />

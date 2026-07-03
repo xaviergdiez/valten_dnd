@@ -54,6 +54,7 @@ export default function App() {
   const [characterProfile, setCharacterProfile] = useState(characterProfileSeed);
   const [avatarUrls, setAvatarUrls] = usePersistedState("avatarUrls", { full: null, crop: null });
   const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
+  const [spellDatabase, setSpellDatabase] = useState([]);
   const [inspiration, setInspiration] = usePersistedState("inspiration", profile.inspiration);
 
   const [abilityScores, setAbilityScores] = usePersistedState("abilityScores", abilityScoresSeed);
@@ -126,6 +127,7 @@ export default function App() {
             });
           }
           if (cfg.spellCards) updateSpellCatalog(cfg.spellCards);
+          if (cfg.spellDatabase) setSpellDatabase(cfg.spellDatabase);
           if (cfg.characterProfile && cfg.characterProfile.characterName) {
             setCharacterProfile((prev) => ({ ...prev, ...cfg.characterProfile }));
           }
@@ -203,6 +205,7 @@ export default function App() {
           magicItems={magicItems}
           setMagicItems={setMagicItems}
           proficiencyBonus={proficiencyBonus}
+          spellDatabase={spellDatabase}
         />
       ),
     },

@@ -158,6 +158,23 @@ function buildConfig(sheets) {
     if (spellCards.length > 0) config.spellCards = spellCards;
   }
 
+  // SpellData tab — full spell database for the in-app picker
+  // Expected columns: spell_name, level, school, casting_time, range, components, duration, description
+  if (sheets.spellData?.length) {
+    config.spellDatabase = sheets.spellData
+      .map((r) => ({
+        name: String(r.spell_name || r.name || "").trim(),
+        cardLevel: String(r.level ?? "").trim(),
+        school: String(r.school ?? ""),
+        castTime: String(r.casting_time ?? ""),
+        range: String(r.range ?? ""),
+        components: String(r.components ?? ""),
+        duration: String(r.duration ?? ""),
+        description: String(r.description ?? ""),
+      }))
+      .filter((s) => s.name);
+  }
+
   return config;
 }
 

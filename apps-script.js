@@ -49,6 +49,11 @@
  * │             │ material │ school │ classes (comma-sep class keys)           │
  * │             │ NOTE: level = "Cantrip", "1"–"9", or "Item" (skip magic     │
  * │             │ items). The `classes` column links spells to knownByLevel.  │
+ * ├─────────────┼──────────────────────────────────────────────────────────────┤
+ * │ SpellData   │ spell_name │ level │ school │ casting_time │ range │         │
+ * │             │ components │ duration │ description                          │
+ * │             │ Spell database for the in-app picker. Same column format as  │
+ * │             │ Custom Spells (minus classes). level = "Cantrip" or "1"–"9".│
  * └─────────────┴──────────────────────────────────────────────────────────────┘
  */
 
@@ -64,6 +69,7 @@ var TABS = [
   "Spellcasting",
   "Spell Slots",
   "Custom Spells",
+  "SpellData",
 ];
 
 // Keys used in the payload match what /api/sync-sheet expects.
@@ -79,6 +85,7 @@ var TAB_KEYS = {
   "Spellcasting": "spellcasting",
   "Spell Slots": "spellSlots",
   "Custom Spells": "spells",
+  "SpellData": "spellData",
 };
 
 function syncToApp() {

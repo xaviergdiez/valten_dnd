@@ -1,0 +1,86 @@
+.spell-picker {
+  padding: 0;
+  border: var(--border-width-lg) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  width: min(420px, 94vw);
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.spell-picker::backdrop {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.spell-picker__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+}
+
+.spell-picker__search {
+  flex: 1;
+  font-size: 14px;
+}
+
+.spell-picker__list {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-xs) 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.spell-picker__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  text-align: left;
+  cursor: pointer;
+  color: var(--color-text);
+}
+
+.spell-picker__item:hover {
+  background: var(--color-surface-raised);
+}
+
+.spell-picker__item-name {
+  flex: 1;
+  font-size: 13px;
+}
+
+.spell-picker__item-level {
+  font-size: 11px;
+  color: var(--color-gold);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.spell-picker__item-school {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.spell-picker__empty {
+  padding: var(--space-lg) var(--space-md);
+  font-size: 13px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.spell-picker__footer {
+  padding: var(--space-md);
+  border-top: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+}
