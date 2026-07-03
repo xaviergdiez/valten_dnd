@@ -9,11 +9,19 @@ export default async function handler(req, res) {
 
   try {
     const blob = await get(name, { access: "private" });
-    if (!blob || blob.statusCode !== 200) return res.status(404).end();
+    if (!blob || blob.statusCode !== 200 || !blob.stream) {
+      return res.status(404).end();
+    }
 
-    const buffer = Buffer.from(await new Response(blob.stream).arrayBuffer());
-    res.setHeader("Content-Type", blob.contentType || "image/png");
-    res.setHeader("Cache-Control", "public, max-age=3600");
+    const chunks = [];
+    for await (const chunk of blob.stream) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    const buffer = Buffer.concat(chunks);
+
+    res.setHeader("Content-Type", blob.blob?.contentType || "image/png");
+    // Immutable: URL already has a cache-busting timestamp, so 1-year cache is safe.
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
     return res.send(buffer);
   } catch {
     return res.status(404).end();

@@ -14,7 +14,7 @@ import "./BackgroundPanel.css";
 
 const TABS = ["Backstory", "Proficiencies & Languages", "Notes"];
 
-export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure, avatarUrls, characterProfile, onGenerateAvatar, isGeneratingAvatar }) {
+export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure, avatarUrls, characterProfile, onGenerateAvatar, isGeneratingAvatar, avatarError }) {
   const [tab, setTab] = useState("Backstory");
   const dialogRef = useRef(null);
 
@@ -61,6 +61,9 @@ export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure
             >
               {isGeneratingAvatar ? "Generating…" : "↺ Regenerate Avatar"}
             </button>
+            {avatarError && (
+              <p className="background-panel__avatar-error">{avatarError}</p>
+            )}
           </div>
 
           <dialog ref={dialogRef} className="background-panel__confirm-dialog">

@@ -42,6 +42,36 @@ async function callGeminiImage(prompt, apiKey) {
   return { buffer: Buffer.from(b64, "base64"), mimeType };
 }
 
+async function streamToText(stream) {
+  const chunks = [];
+  for await (const chunk of stream) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks).toString("utf-8");
+}
+
+// Writes the new avatarUrls back into the config blob so they survive sheet re-syncs.
+// Intentionally fire-and-forget — runs after the response is sent.
+function updateConfigAvatar(avatarUrls) {
+  (async () => {
+    try {
+      const existing = await get(CONFIG_PATHNAME, { access: "private" });
+      if (!existing || existing.statusCode !== 200 || !existing.stream) return;
+      const text = await streamToText(existing.stream);
+      const cfg = JSON.parse(text);
+      cfg.avatarUrls = avatarUrls;
+      await put(CONFIG_PATHNAME, JSON.stringify(cfg), {
+        access: "private",
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        contentType: "application/json",
+      });
+    } catch {
+      // Non-fatal — avatar URLs are already returned to the client.
+    }
+  })();
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -64,35 +94,19 @@ export default async function handler(req, res) {
       .replace(/[^a-z0-9-]/g, "");
 
     const ext = image.mimeType.includes("jpeg") ? "jpg" : "png";
-    const blobName = `avatar-${slug}.${ext}`;
+    // Unique name per generation — no overwrite, no stale content.
+    const blobName = `avatar-${slug}-${Date.now()}.${ext}`;
 
-    await put(blobName, image.buffer, {
-      access: "private",
-      addRandomSuffix: false,
-      allowOverwrite: true,
+    // Public blob → direct CDN URL, no proxy function, no caching ambiguity.
+    const result = await put(blobName, image.buffer, {
+      access: "public",
       contentType: image.mimeType,
     });
 
-    const url = `/api/avatar?name=${encodeURIComponent(blobName)}&t=${Date.now()}`;
-    const avatarUrls = { full: url, crop: url };
+    const avatarUrls = { full: result.url, crop: result.url };
 
-    // Merge avatar URLs back into the config blob so they survive sheet re-syncs.
-    try {
-      const existing = await get(CONFIG_PATHNAME, { access: "private" });
-      if (existing) {
-        const text = await new Response(existing.stream).text();
-        const cfg = JSON.parse(text);
-        cfg.avatarUrls = avatarUrls;
-        await put(CONFIG_PATHNAME, JSON.stringify(cfg), {
-          access: "private",
-          addRandomSuffix: false,
-          allowOverwrite: true,
-          contentType: "application/json",
-        });
-      }
-    } catch {
-      // Non-fatal — avatar URLs are still returned to the client.
-    }
+    // Respond immediately — don't block on config blob update.
+    updateConfigAvatar(avatarUrls);
 
     return res.status(200).json({ ok: true, avatarUrls });
   } catch (err) {

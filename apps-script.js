@@ -44,16 +44,18 @@
  * ├─────────────┼──────────────────────────────────────────────────────────────┤
  * │ Spell Slots │ class  │ level  │ total                                      │
  * ├─────────────┼──────────────────────────────────────────────────────────────┤
- * │ Custom      │ spell_name │ level │ range │ components │ duration │         │
+ * │ Custom      │ spell_name │ class │ level │ range │ components │ duration │  │
  * │ Spells      │ concentration │ casting_time │ ritual │ description │        │
  * │             │ material │ school │ classes (comma-sep class keys)           │
  * │             │ NOTE: level = "Cantrip", "1"–"9", or "Item" (skip magic     │
- * │             │ items). The `classes` column links spells to knownByLevel.  │
+ * │             │ items). `class` = primary class; `classes` links to         │
+ * │             │ knownByLevel. syncFromApp() rewrites this tab.              │
  * ├─────────────┼──────────────────────────────────────────────────────────────┤
- * │ SpellData   │ spell_name │ level │ school │ casting_time │ range │         │
- * │             │ components │ duration │ description                          │
- * │             │ Spell database for the in-app picker. Same column format as  │
- * │             │ Custom Spells (minus classes). level = "Cantrip" or "1"–"9".│
+ * │ SpellData   │ spell_name │ level │ range │ components │ duration │         │
+ * │             │ concentration │ casting_time │ ritual │ description │        │
+ * │             │ material │ school │ classes                                  │
+ * │             │ Spell database for the in-app picker.                        │
+ * │             │ level = "Cantrip" or "1"–"9" (numeric 0 also accepted).    │
  * └─────────────┴──────────────────────────────────────────────────────────────┘
  */
 
@@ -170,14 +172,16 @@ function syncFromApp() {
 
   sheet.clearContents();
 
-  var headers = ["spell_name", "level", "range", "components", "duration", "concentration",
-                 "casting_time", "ritual", "description", "material", "school", "classes"];
+  var headers = ["spell_name", "class", "level", "range", "components", "duration",
+                 "concentration", "casting_time", "ritual", "description", "material",
+                 "school", "classes"];
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
 
   if (rows.length > 0) {
     var values = rows.map(function (r) {
       return [
         r.spell_name    || "",
+        r["class"]      || "",   // primary class (first entry from classes)
         r.level         || "",
         r.range         || "",
         r.components    || "",

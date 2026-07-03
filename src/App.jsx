@@ -154,8 +154,11 @@ export default function App() {
     );
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const [avatarError, setAvatarError] = useState(null);
+
   const handleGenerateAvatar = async () => {
     setIsGeneratingAvatar(true);
+    setAvatarError(null);
     try {
       const res = await fetch("/api/generate-avatar", {
         method: "POST",
@@ -165,8 +168,11 @@ export default function App() {
       const data = await res.json();
       if (res.ok) {
         setAvatarUrls(data.avatarUrls);
+      } else {
+        setAvatarError(data.error || "Generation failed — try again");
       }
     } catch (err) {
+      setAvatarError("Request failed — check your connection and try again");
       console.error("Avatar generation failed:", err);
     } finally {
       setIsGeneratingAvatar(false);
@@ -231,7 +237,7 @@ export default function App() {
       id: "background",
       tabGroup: "Background",
       wide: true,
-      content: <BackgroundPanel notes={notes} setNotes={setNotes} treasure={treasure} setTreasure={setTreasure} avatarUrls={avatarUrls} characterProfile={characterProfile} onGenerateAvatar={handleGenerateAvatar} isGeneratingAvatar={isGeneratingAvatar} />,
+      content: <BackgroundPanel notes={notes} setNotes={setNotes} treasure={treasure} setTreasure={setTreasure} avatarUrls={avatarUrls} characterProfile={characterProfile} onGenerateAvatar={handleGenerateAvatar} isGeneratingAvatar={isGeneratingAvatar} avatarError={avatarError} />,
     },
   ];
 

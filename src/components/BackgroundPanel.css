@@ -71,6 +71,13 @@
   cursor: not-allowed;
 }
 
+.background-panel__avatar-error {
+  margin: var(--space-sm) 0 0;
+  font-size: 11px;
+  color: #c0392b;
+  text-align: center;
+}
+
 .background-panel__confirm-dialog {
   border: var(--border-width-lg) solid var(--color-border);
   border-radius: var(--radius-md);

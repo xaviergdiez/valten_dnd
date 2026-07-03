@@ -3,11 +3,13 @@ import { useEffect, useState } from "react";
 const PREFIX = "valten-sheet:";
 const API_URL = "/api/state";
 const FLUSH_DELAY_MS = 800;
+const PERIODIC_SAVE_MS = 20_000; // save at most every 20s as a safety net
 
-// Module-level so the ~20 fields on the sheet share one fetch and one debounced save.
+// Module-level so the ~20 fields share one fetch and one debounced save.
 let remoteHydrated = false;
 let remoteStatePromise = null;
 let flushTimer = null;
+let lastFlushedAt = 0;
 
 function getAllLocalState() {
   const all = {};
@@ -26,9 +28,13 @@ function getAllLocalState() {
 
 export function fetchRemoteState() {
   if (!remoteStatePromise) {
-    remoteStatePromise = fetch(API_URL)
+    remoteStatePromise = fetch(API_URL, { headers: { "Cache-Control": "no-cache" } })
       .then((res) => (res.ok ? res.json() : {}))
-      .catch(() => ({}))
+      .catch(() => {
+        // Allow retry on next call if the initial load fails.
+        remoteStatePromise = null;
+        return {};
+      })
       .then((data) => {
         remoteHydrated = true;
         return data;
@@ -37,33 +43,43 @@ export function fetchRemoteState() {
   return remoteStatePromise;
 }
 
-function flushNow() {
+// keepalive=true is needed only for unload events; regular debounce flushes
+// use a normal fetch so they aren't subject to the 64KB keepalive body limit.
+function sendState(keepalive = false) {
   if (!remoteHydrated) return;
-  clearTimeout(flushTimer);
-  // keepalive: true lets the request survive page unload
+  lastFlushedAt = Date.now();
   fetch(API_URL, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    keepalive: true,
+    ...(keepalive ? { keepalive: true } : {}),
     body: JSON.stringify(getAllLocalState()),
   }).catch(() => {});
 }
 
-function scheduleRemoteFlush() {
-  // Don't push to remote until the initial load has resolved — otherwise a
-  // fresh device would flush blank defaults and clobber data from another device.
+function flushNow() {
   if (!remoteHydrated) return;
   clearTimeout(flushTimer);
-  flushTimer = setTimeout(flushNow, FLUSH_DELAY_MS);
+  sendState(true); // keepalive for unload reliability
 }
 
-// Flush immediately when the tab goes to background or the page is unloading,
-// so changes aren't lost when the user closes the browser before the debounce fires.
+function scheduleRemoteFlush() {
+  if (!remoteHydrated) return;
+  clearTimeout(flushTimer);
+  flushTimer = setTimeout(() => sendState(false), FLUSH_DELAY_MS);
+}
+
 if (typeof document !== "undefined") {
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") flushNow();
   });
   window.addEventListener("pagehide", flushNow);
+
+  // Periodic save: catches changes that slipped through debounce/unload.
+  setInterval(() => {
+    if (remoteHydrated && Date.now() - lastFlushedAt >= PERIODIC_SAVE_MS) {
+      sendState(false);
+    }
+  }, PERIODIC_SAVE_MS);
 }
 
 export function usePersistedState(key, defaultValue) {

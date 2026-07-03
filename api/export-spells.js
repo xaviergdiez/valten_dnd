@@ -34,10 +34,13 @@ export default async function handler(req, res) {
   const customCards = state.customSpellCards ?? {};
 
   // Build a map: spell name → { level, classes[] }
+  // Use the human-readable label ("Cleric", "Warlock") so the sheet's dropdown
+  // validation accepts the values — the raw keys are lowercase internal identifiers.
   const spellMeta = {};
   const record = (name, level, classKey) => {
+    const label = spellClasses[classKey]?.label ?? classKey;
     if (!spellMeta[name]) spellMeta[name] = { level, classes: [] };
-    if (!spellMeta[name].classes.includes(classKey)) spellMeta[name].classes.push(classKey);
+    if (!spellMeta[name].classes.includes(label)) spellMeta[name].classes.push(label);
   };
 
   for (const [classKey, cls] of Object.entries(spellClasses)) {
@@ -54,6 +57,7 @@ export default async function handler(req, res) {
       const { level, classes } = spellMeta[name];
       return {
         spell_name: name,
+        class: classes[0] ?? "",
         level,
         school: card.school ?? "",
         casting_time: card.castTime ?? "",

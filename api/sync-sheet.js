@@ -219,8 +219,10 @@ function buildSpellData(sheets) {
   }
 
   // Custom Spells tab → card catalog + populate knownByLevel
-  // Expected columns: spell_name, level, range, components, duration, concentration,
-  //                   casting_time, ritual, description, material, school, classes
+  // Actual columns: spell_name, class, level, range, components, duration, concentration,
+  //                 casting_time, ritual, description, material, school, classes
+  // `class` (singular) is the primary class and is ignored here; `classes` (plural,
+  // comma-sep) is what drives knownByLevel population.
   const spellCards = [];
   for (const r of sheets.spells ?? []) {
     const title = String(r.spell_name ?? "").trim();
