@@ -97,13 +97,17 @@ export default async function handler(req, res) {
     // Unique name per generation — no overwrite, no stale content.
     const blobName = `avatar-${slug}-${Date.now()}.${ext}`;
 
-    // Public blob → direct CDN URL, no proxy function, no caching ambiguity.
-    const result = await put(blobName, image.buffer, {
-      access: "public",
+    await put(blobName, image.buffer, {
+      access: "private",
+      addRandomSuffix: false,
+      allowOverwrite: true,
       contentType: image.mimeType,
     });
 
-    const avatarUrls = { full: result.url, crop: result.url };
+    // Serve through the proxy so the store stays private.
+    // Unique blobName per generation acts as the cache-buster.
+    const proxyUrl = `/api/avatar?name=${encodeURIComponent(blobName)}`;
+    const avatarUrls = { full: proxyUrl, crop: proxyUrl };
 
     // Respond immediately — don't block on config blob update.
     updateConfigAvatar(avatarUrls);
