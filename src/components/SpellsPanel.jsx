@@ -32,7 +32,7 @@ export default function SpellsPanel({
   const [tab, setTab] = useState("Cleric");
   const [justAdded, setJustAdded] = useState(() => new Set());
   const pickerRef = useRef(null);
-  const pickerContext = useRef(null); // { classKey, level: number | "cantrip" }
+  const [pickerCtx, setPickerCtx] = useState({ classKey: null, level: null });
 
   const togglePrepared = (name) => setPrepared((prev) => ({ ...prev, [name]: !prev[name] }));
   const updateCustomCard = (name) => (updated) => setCustomCards((prev) => ({ ...prev, [name]: updated }));
@@ -97,12 +97,12 @@ export default function SpellsPanel({
   };
 
   const openPicker = (classKey, level) => {
-    pickerContext.current = { classKey, level };
+    setPickerCtx({ classKey, level });
     pickerRef.current?.open();
   };
 
   const handlePickSpell = (spell) => {
-    const { classKey, level } = pickerContext.current;
+    const { classKey, level } = pickerCtx;
     if (level === "cantrip") {
       updateClass(classKey, (c) => ({ ...c, cantrips: [...c.cantrips, spell.name] }));
     } else {
@@ -127,7 +127,7 @@ export default function SpellsPanel({
   };
 
   const handleCustomSpell = () => {
-    const { classKey, level } = pickerContext.current;
+    const { classKey, level } = pickerCtx;
     if (level === "cantrip") {
       addCantripBlank(classKey);
     } else {
@@ -274,6 +274,7 @@ export default function SpellsPanel({
       <SpellPicker
         ref={pickerRef}
         database={spellDatabase}
+        levelFilter={pickerCtx.level != null ? String(pickerCtx.level) : undefined}
         onPick={handlePickSpell}
         onCustom={handleCustomSpell}
       />
