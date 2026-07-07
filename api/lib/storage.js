@@ -20,7 +20,7 @@ export async function writeData(resource, data) {
   let r;
   try {
     r = await fetch(endpoint(resource), {
-      method: "PUT",
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
@@ -44,7 +44,7 @@ export async function readAvatar() {
 
 export async function writeAvatar(mimeType, imageBuffer) {
   const r = await fetch(endpoint("avatar"), {
-    method: "PUT",
+    method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ mimeType, b64: imageBuffer.toString("base64") }),
   });

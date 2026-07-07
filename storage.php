@@ -77,7 +77,7 @@ if ($method === 'GET') {
 }
 
 // ── PUT ───────────────────────────────────────────────────────────────────────
-if ($method === 'PUT') {
+if ($method === 'POST') {
     $body = file_get_contents('php://input');
     $data = json_decode($body, true);
 
@@ -103,4 +103,4 @@ if ($method === 'PUT') {
 
 http_response_code(405);
 header('Content-Type: application/json');
-echo json_encode(['error' => 'method_not_allowed']);
+echo json_encode(['error' => 'method_not_allowed', 'method' => $method]);
