@@ -1,17 +1,14 @@
 const BASE = process.env.PHP_STORAGE_URL;
 const KEY  = process.env.PHP_STORAGE_KEY;
 
+// Key sent as query param — avoids Apache stripping the Authorization header.
 function endpoint(resource) {
-  return `${BASE}?r=${resource}`;
-}
-
-function authHeaders(extra = {}) {
-  return { Authorization: `Bearer ${KEY}`, ...extra };
+  return `${BASE}?r=${resource}&k=${encodeURIComponent(KEY)}`;
 }
 
 export async function readData(resource) {
   try {
-    const r = await fetch(endpoint(resource), { headers: authHeaders() });
+    const r = await fetch(endpoint(resource));
     if (!r.ok) return {};
     return await r.json();
   } catch {
@@ -22,14 +19,14 @@ export async function readData(resource) {
 export async function writeData(resource, data) {
   const r = await fetch(endpoint(resource), {
     method: "PUT",
-    headers: authHeaders({ "Content-Type": "application/json" }),
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
   if (!r.ok) throw new Error(`Storage write (${resource}) failed: ${r.status}`);
 }
 
 export async function readAvatar() {
-  const r = await fetch(endpoint("avatar"), { headers: authHeaders() });
+  const r = await fetch(endpoint("avatar"));
   if (!r.ok) return null;
   return {
     buffer: Buffer.from(await r.arrayBuffer()),
@@ -40,7 +37,7 @@ export async function readAvatar() {
 export async function writeAvatar(mimeType, imageBuffer) {
   const r = await fetch(endpoint("avatar"), {
     method: "PUT",
-    headers: authHeaders({ "Content-Type": "application/json" }),
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ mimeType, b64: imageBuffer.toString("base64") }),
   });
   if (!r.ok) throw new Error(`Avatar write failed: ${r.status}`);

@@ -21,14 +21,9 @@ define('API_KEY',  'DNDValtenKey');
 define('DATA_DIR', __DIR__ . '/data');
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
-// Apache/cPanel often strips Authorization from $_SERVER; getallheaders() is reliable.
-$allHeaders = function_exists('getallheaders') ? getallheaders() : [];
-$auth = $_SERVER['HTTP_AUTHORIZATION']
-     ?? $_SERVER['HTTP_X_AUTHORIZATION']
-     ?? $allHeaders['Authorization']
-     ?? $allHeaders['authorization']
-     ?? '';
-if ($auth !== 'Bearer ' . API_KEY) {
+// Key arrives as ?k= query param — avoids Apache stripping the Authorization header.
+$key = $_GET['k'] ?? '';
+if ($key !== API_KEY) {
     http_response_code(401);
     header('Content-Type: application/json');
     echo json_encode(['error' => 'unauthorized']);
