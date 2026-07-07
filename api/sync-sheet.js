@@ -14,8 +14,17 @@ export default async function handler(req, res) {
   try {
     const existing = await readData("config");
     const sheets = req.body ?? {};
-    const config = { ...existing, ...buildConfig(sheets) };
+    const built = buildConfig(sheets);
+
+    // Store spellDatabase separately to stay under Upstash's 1MB per-request limit.
+    const spellDatabase = built.spellDatabase ?? existing.spellDatabase;
+    delete built.spellDatabase;
+    const existingWithoutDb = { ...existing };
+    delete existingWithoutDb.spellDatabase;
+
+    const config = { ...existingWithoutDb, ...built };
     await writeData("config", config);
+    if (spellDatabase) await writeData("spelldb", spellDatabase);
     return res.status(200).json({ ok: true, updatedAt: new Date().toISOString() });
   } catch (err) {
     console.error("sync-sheet error:", err?.message ?? err);
