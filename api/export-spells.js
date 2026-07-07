@@ -1,21 +1,4 @@
-import { get } from "@vercel/blob";
-
-const STATE_PATHNAME = "valten-character-state.json";
-const CONFIG_PATHNAME = "valten-sheet-config.json";
-
-async function readBlob(pathname) {
-  try {
-    const blob = await get(pathname, { access: "private" });
-    if (!blob || blob.statusCode !== 200 || !blob.stream) return {};
-    const chunks = [];
-    for await (const chunk of blob.stream) {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-    }
-    return JSON.parse(Buffer.concat(chunks).toString("utf-8"));
-  } catch {
-    return {};
-  }
-}
+import { readData } from "./lib/storage.js";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
@@ -29,18 +12,18 @@ export default async function handler(req, res) {
   }
 
   const [state, config] = await Promise.all([
-    readBlob(STATE_PATHNAME),
-    readBlob(CONFIG_PATHNAME),
+    readData("state"),
+    readData("config"),
   ]);
 
   // Union spellClasses from state and config so class assignments survive even
   // when syncToApp ran after the last app session (state might not reflect it yet).
-  const stateClasses = state.spellClasses ?? {};
+  const stateClasses  = state.spellClasses ?? {};
   const configClasses = config.spellClasses ?? {};
-  const allClassKeys = new Set([...Object.keys(stateClasses), ...Object.keys(configClasses)]);
-  const spellClasses = {};
+  const allClassKeys  = new Set([...Object.keys(stateClasses), ...Object.keys(configClasses)]);
+  const spellClasses  = {};
   for (const key of allClassKeys) {
-    const sc = stateClasses[key] ?? {};
+    const sc = stateClasses[key]  ?? {};
     const cc = configClasses[key] ?? {};
     const allLevels = new Set([
       ...Object.keys(sc.knownByLevel ?? {}),
@@ -53,27 +36,23 @@ export default async function handler(req, res) {
       ];
     }
     spellClasses[key] = {
-      label: sc.label ?? cc.label ?? key,
-      cantrips: [...new Set([...(sc.cantrips ?? []), ...(cc.cantrips ?? [])])],
+      label:        sc.label ?? cc.label ?? key,
+      cantrips:     [...new Set([...(sc.cantrips ?? []), ...(cc.cantrips ?? [])])],
       knownByLevel,
     };
   }
 
-  // Card data sources (in priority order):
-  // 1. customSpellCards in state — spells added / edited via the in-app picker
-  // 2. spellCards in config   — spells previously imported from the Custom Spells sheet tab
-  // State takes priority so in-app edits are preserved; config fills the gap for
-  // spells that only exist in the sheet and never went through the app picker.
+  // Card data sources (state takes priority over config):
+  // - customSpellCards in state: spells added via the in-app picker
+  // - spellCards in config:      spells previously imported from the Custom Spells sheet tab
   const configCardMap = {};
   for (const card of config.spellCards ?? []) {
     if (card.title) configCardMap[card.title] = card;
   }
-  const stateCardMap = state.customSpellCards ?? {};
-  const allCustomCards = { ...configCardMap, ...stateCardMap };
+  const stateCardMap    = state.customSpellCards ?? {};
+  const allCustomCards  = { ...configCardMap, ...stateCardMap };
 
-  // Build a map: spell name → { level, classes[] }
-  // Use the human-readable label ("Cleric", "Warlock") so the sheet's dropdown
-  // validation accepts the values — the raw keys are lowercase internal identifiers.
+  // Build spell → { level, classes[] } map using human-readable labels.
   const spellMeta = {};
   const record = (name, level, classKey) => {
     const label = spellClasses[classKey]?.label ?? classKey;
@@ -88,22 +67,21 @@ export default async function handler(req, res) {
     }
   }
 
-  // Export spells that have card data AND a class assignment.
   const rows = Object.entries(allCustomCards)
     .filter(([name]) => spellMeta[name])
     .map(([name, card]) => {
       const { level, classes } = spellMeta[name];
       return {
-        spell_name: name,
-        class: classes[0] ?? "",
+        spell_name:   name,
+        class:        classes[0] ?? "",
         level,
-        school: card.school ?? "",
+        school:       card.school ?? "",
         casting_time: card.castTime ?? "",
-        range: card.range ?? "",
-        components: card.components ?? "",
-        duration: card.duration ?? "",
-        description: card.description ?? "",
-        classes: classes.join(", "),
+        range:        card.range ?? "",
+        components:   card.components ?? "",
+        duration:     card.duration ?? "",
+        description:  card.description ?? "",
+        classes:      classes.join(", "),
       };
     })
     .sort((a, b) => {

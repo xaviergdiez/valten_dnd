@@ -50,6 +50,7 @@ export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure
             <div className="background-panel__portrait">
               <img
                 src={avatarUrls?.full || "/valten-full.jpg"}
+                onError={(e) => { e.target.onerror = null; e.target.src = "/valten-full.jpg"; }}
                 alt={characterProfile?.characterName || "Character, full body"}
               />
             </div>

@@ -1,14 +1,12 @@
-import { put, get } from "@vercel/blob";
+import { writeAvatar } from "./lib/storage.js";
 
-// Uses the Gemini image generation model via Google AI Studio key.
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
-const CONFIG_PATHNAME = "valten-sheet-config.json";
 
 function buildPrompt(p) {
   const parts = [p.race, p.gender, p.background].filter(Boolean);
   if (p.classLevel) parts.push(p.classLevel);
   const identity = parts.join(", ");
-  const name = p.characterName || "A character";
+  const name  = p.characterName || "A character";
   const looks = p.description || "";
   return (
     `Full body D&D character portrait, portrait orientation. ${name}, ${identity}. ` +
@@ -42,36 +40,6 @@ async function callGeminiImage(prompt, apiKey) {
   return { buffer: Buffer.from(b64, "base64"), mimeType };
 }
 
-async function streamToText(stream) {
-  const chunks = [];
-  for await (const chunk of stream) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-  }
-  return Buffer.concat(chunks).toString("utf-8");
-}
-
-// Writes the new avatarUrls back into the config blob so they survive sheet re-syncs.
-// Intentionally fire-and-forget — runs after the response is sent.
-function updateConfigAvatar(avatarUrls) {
-  (async () => {
-    try {
-      const existing = await get(CONFIG_PATHNAME, { access: "private" });
-      if (!existing || existing.statusCode !== 200 || !existing.stream) return;
-      const text = await streamToText(existing.stream);
-      const cfg = JSON.parse(text);
-      cfg.avatarUrls = avatarUrls;
-      await put(CONFIG_PATHNAME, JSON.stringify(cfg), {
-        access: "private",
-        addRandomSuffix: false,
-        allowOverwrite: true,
-        contentType: "application/json",
-      });
-    } catch {
-      // Non-fatal — avatar URLs are already returned to the client.
-    }
-  })();
-}
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -88,29 +56,12 @@ export default async function handler(req, res) {
   try {
     const image = await callGeminiImage(buildPrompt(profile), apiKey);
 
-    const slug = (profile.characterName || "character")
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "");
+    // Store in PHP hosting — no Blob operations.
+    await writeAvatar(image.mimeType, image.buffer);
 
-    const ext = image.mimeType.includes("jpeg") ? "jpg" : "png";
-    // Unique name per generation — no overwrite, no stale content.
-    const blobName = `avatar-${slug}-${Date.now()}.${ext}`;
-
-    await put(blobName, image.buffer, {
-      access: "private",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: image.mimeType,
-    });
-
-    // Serve through the proxy so the store stays private.
-    // Unique blobName per generation acts as the cache-buster.
-    const proxyUrl = `/api/avatar?name=${encodeURIComponent(blobName)}`;
-    const avatarUrls = { full: proxyUrl, crop: proxyUrl };
-
-    // Respond immediately — don't block on config blob update.
-    updateConfigAvatar(avatarUrls);
+    // Cache-bust via timestamp so the browser fetches the new image.
+    const v = Date.now();
+    const avatarUrls = { full: `/api/avatar?v=${v}`, crop: `/api/avatar?v=${v}` };
 
     return res.status(200).json({ ok: true, avatarUrls });
   } catch (err) {
