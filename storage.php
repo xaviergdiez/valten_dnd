@@ -12,30 +12,30 @@
  *       PHP_STORAGE_KEY  =  [same value as API_KEY]
  *
  * Resources (pass as ?r=...):
- *   state   – character runtime state JSON  (GET / PUT)
- *   config  – sheet-synced config JSON      (GET / PUT)
- *   avatar  – avatar image                  (GET returns image, PUT accepts {mimeType,b64})
+ *   state   – character runtime state JSON  (GET / POST)
+ *   config  – sheet-synced config JSON      (GET / POST)
+ *   avatar  – avatar image                  (GET returns image, POST accepts {mimeType,b64})
  */
 
 define('API_KEY',  'DNDValtenKey');
 define('DATA_DIR', __DIR__ . '/data');
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
-// Key arrives as ?k= query param — avoids Apache stripping the Authorization header.
-$key = $_GET['k'] ?? '';
+// Key arrives as ?k= query param — compatible with all PHP versions and Apache configs.
+$key = isset($_GET['k']) ? $_GET['k'] : '';
 if ($key !== API_KEY) {
     http_response_code(401);
     header('Content-Type: application/json');
-    echo json_encode(['error' => 'unauthorized']);
+    echo json_encode(array('error' => 'unauthorized'));
     exit;
 }
 
 // ── Route ─────────────────────────────────────────────────────────────────────
-$resource = $_GET['r'] ?? '';
-if (!in_array($resource, ['state', 'config', 'avatar'], true)) {
+$resource = isset($_GET['r']) ? $_GET['r'] : '';
+if (!in_array($resource, array('state', 'config', 'avatar'), true)) {
     http_response_code(400);
     header('Content-Type: application/json');
-    echo json_encode(['error' => 'invalid_resource']);
+    echo json_encode(array('error' => 'invalid_resource'));
     exit;
 }
 
@@ -65,7 +65,8 @@ if ($method === 'GET') {
             http_response_code(404);
             exit;
         }
-        header('Content-Type: ' . ($data['mimeType'] ?? 'image/png'));
+        $mime = isset($data['mimeType']) ? $data['mimeType'] : 'image/png';
+        header('Content-Type: ' . $mime);
         header('Cache-Control: public, max-age=31536000, immutable');
         echo base64_decode($data['b64']);
     } else {
@@ -76,7 +77,7 @@ if ($method === 'GET') {
     exit;
 }
 
-// ── PUT ───────────────────────────────────────────────────────────────────────
+// ── POST ──────────────────────────────────────────────────────────────────────
 if ($method === 'POST') {
     $body = file_get_contents('php://input');
     $data = json_decode($body, true);
@@ -84,23 +85,23 @@ if ($method === 'POST') {
     if ($data === null) {
         http_response_code(400);
         header('Content-Type: application/json');
-        echo json_encode(['error' => 'invalid_json']);
+        echo json_encode(array('error' => 'invalid_json'));
         exit;
     }
 
     if ($resource === 'avatar' && empty($data['b64'])) {
         http_response_code(400);
         header('Content-Type: application/json');
-        echo json_encode(['error' => 'missing_b64']);
+        echo json_encode(array('error' => 'missing_b64'));
         exit;
     }
 
     file_put_contents($file, $body, LOCK_EX);
     header('Content-Type: application/json');
-    echo json_encode(['ok' => true]);
+    echo json_encode(array('ok' => true));
     exit;
 }
 
 http_response_code(405);
 header('Content-Type: application/json');
-echo json_encode(['error' => 'method_not_allowed', 'method' => $method]);
+echo json_encode(array('error' => 'method_not_allowed', 'method' => $method));
