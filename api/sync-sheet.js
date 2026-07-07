@@ -18,8 +18,8 @@ export default async function handler(req, res) {
     await writeData("config", config);
     return res.status(200).json({ ok: true, updatedAt: new Date().toISOString() });
   } catch (err) {
-    console.error("sync-sheet error:", err);
-    return res.status(500).json({ error: "sync_failed" });
+    console.error("sync-sheet error:", err?.message ?? err);
+    return res.status(500).json({ error: "sync_failed", detail: err?.message ?? String(err) });
   }
 }
 

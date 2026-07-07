@@ -17,12 +17,20 @@ export async function readData(resource) {
 }
 
 export async function writeData(resource, data) {
-  const r = await fetch(endpoint(resource), {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!r.ok) throw new Error(`Storage write (${resource}) failed: ${r.status}`);
+  let r;
+  try {
+    r = await fetch(endpoint(resource), {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  } catch (err) {
+    throw new Error(`Storage fetch (${resource}) network error: ${err.message}`);
+  }
+  if (!r.ok) {
+    const body = await r.text().catch(() => "");
+    throw new Error(`Storage write (${resource}) HTTP ${r.status}: ${body.slice(0, 200)}`);
+  }
 }
 
 export async function readAvatar() {
