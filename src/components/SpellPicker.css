@@ -38,6 +38,7 @@ dialog[open].spell-picker {
   padding: var(--space-xs) 0;
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
 }
 
 .spell-picker__item {
