@@ -91,67 +91,79 @@ export default function App() {
 
   // Sheet config loads after session state hydrates so it always wins the race.
   useEffect(() => {
-    fetchRemoteState().then(() =>
-      fetch("/api/config")
+    function applyConfig(cfg) {
+      if (!cfg) return;
+      if (cfg.classLevel) setClassLevel(cfg.classLevel);
+      if (cfg.abilityScores) setAbilityScores(cfg.abilityScores);
+      if (cfg.proficiencyBonus != null) setProficiencyBonus(cfg.proficiencyBonus);
+      if (cfg.saveProficiencies) setSaveProficiencies(cfg.saveProficiencies);
+      if (cfg.skillProficiencies) setSkillProficiencies(cfg.skillProficiencies);
+      if (cfg.combatStats) setCombatStats(cfg.combatStats);
+      if (cfg.hpMax != null) setHpMax(cfg.hpMax);
+      if (cfg.hitDiceBase) setHitDice((prev) => ({ ...prev, count: cfg.hitDiceBase.count, die: cfg.hitDiceBase.die }));
+      if (cfg.attacksList) setAttacksList(cfg.attacksList);
+      if (cfg.currency) setCurrency(cfg.currency);
+      if (cfg.equipmentList) setEquipmentList(cfg.equipmentList);
+      if (cfg.featuresList) setFeaturesList(cfg.featuresList);
+      if (cfg.spellClasses && Object.keys(cfg.spellClasses).length > 0) {
+        setSpellClasses((prev) => {
+          const next = { ...prev };
+          for (const [key, cls] of Object.entries(cfg.spellClasses)) {
+            const hasKnown = Object.values(cls.knownByLevel ?? {}).some((arr) => arr.length > 0);
+            const baseKnown = hasKnown ? cls.knownByLevel : (spellClassesSeed[key]?.knownByLevel ?? {});
+
+            // Union merge: start from config baseline, then add any levels/spells
+            // that exist only in prev (added in-app since last sheet sync).
+            const mergedKnown = {};
+            const allLevels = new Set([
+              ...Object.keys(baseKnown),
+              ...Object.keys(prev[key]?.knownByLevel ?? {}),
+            ]);
+            for (const lvl of allLevels) {
+              const fromConfig = baseKnown[lvl] ?? [];
+              const fromPrev = prev[key]?.knownByLevel?.[lvl] ?? [];
+              mergedKnown[lvl] = [...new Set([...fromConfig, ...fromPrev])];
+            }
+
+            // Union cantrips too
+            const mergedCantrips = [
+              ...new Set([...(cls.cantrips ?? []), ...(prev[key]?.cantrips ?? [])]),
+            ];
+
+            next[key] = {
+              ...(prev[key] ?? {}),
+              ...cls,
+              knownByLevel: mergedKnown,
+              cantrips: mergedCantrips,
+            };
+          }
+          return next;
+        });
+      }
+      if (cfg.spellCards) updateSpellCatalog(cfg.spellCards);
+      if (cfg.spellDatabase) setSpellDatabase(cfg.spellDatabase);
+      if (cfg.characterProfile && cfg.characterProfile.characterName) {
+        setCharacterProfile((prev) => ({ ...prev, ...cfg.characterProfile }));
+      }
+      if (cfg.avatarUrls) setAvatarUrls((prev) => (prev?.full ? prev : cfg.avatarUrls));
+    }
+
+    function loadConfig() {
+      return fetch("/api/config")
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null)
-        .then((cfg) => {
-          if (!cfg) return;
-          if (cfg.classLevel) setClassLevel(cfg.classLevel);
-          if (cfg.abilityScores) setAbilityScores(cfg.abilityScores);
-          if (cfg.proficiencyBonus != null) setProficiencyBonus(cfg.proficiencyBonus);
-          if (cfg.saveProficiencies) setSaveProficiencies(cfg.saveProficiencies);
-          if (cfg.skillProficiencies) setSkillProficiencies(cfg.skillProficiencies);
-          if (cfg.combatStats) setCombatStats(cfg.combatStats);
-          if (cfg.hpMax != null) setHpMax(cfg.hpMax);
-          if (cfg.hitDiceBase) setHitDice((prev) => ({ ...prev, count: cfg.hitDiceBase.count, die: cfg.hitDiceBase.die }));
-          if (cfg.attacksList) setAttacksList(cfg.attacksList);
-          if (cfg.currency) setCurrency(cfg.currency);
-          if (cfg.equipmentList) setEquipmentList(cfg.equipmentList);
-          if (cfg.featuresList) setFeaturesList(cfg.featuresList);
-          if (cfg.spellClasses && Object.keys(cfg.spellClasses).length > 0) {
-            setSpellClasses((prev) => {
-              const next = { ...prev };
-              for (const [key, cls] of Object.entries(cfg.spellClasses)) {
-                const hasKnown = Object.values(cls.knownByLevel ?? {}).some((arr) => arr.length > 0);
-                const baseKnown = hasKnown ? cls.knownByLevel : (spellClassesSeed[key]?.knownByLevel ?? {});
+        .then(applyConfig);
+    }
 
-                // Union merge: start from config baseline, then add any levels/spells
-                // that exist only in prev (added in-app since last sheet sync).
-                const mergedKnown = {};
-                const allLevels = new Set([
-                  ...Object.keys(baseKnown),
-                  ...Object.keys(prev[key]?.knownByLevel ?? {}),
-                ]);
-                for (const lvl of allLevels) {
-                  const fromConfig = baseKnown[lvl] ?? [];
-                  const fromPrev = prev[key]?.knownByLevel?.[lvl] ?? [];
-                  mergedKnown[lvl] = [...new Set([...fromConfig, ...fromPrev])];
-                }
+    fetchRemoteState().then(loadConfig);
 
-                // Union cantrips too
-                const mergedCantrips = [
-                  ...new Set([...(cls.cantrips ?? []), ...(prev[key]?.cantrips ?? [])]),
-                ];
-
-                next[key] = {
-                  ...(prev[key] ?? {}),
-                  ...cls,
-                  knownByLevel: mergedKnown,
-                  cantrips: mergedCantrips,
-                };
-              }
-              return next;
-            });
-          }
-          if (cfg.spellCards) updateSpellCatalog(cfg.spellCards);
-          if (cfg.spellDatabase) setSpellDatabase(cfg.spellDatabase);
-          if (cfg.characterProfile && cfg.characterProfile.characterName) {
-            setCharacterProfile((prev) => ({ ...prev, ...cfg.characterProfile }));
-          }
-          if (cfg.avatarUrls) setAvatarUrls((prev) => (prev?.full ? prev : cfg.avatarUrls));
-        })
-    );
+    // Safari bfcache: useEffect doesn't re-run on back-forward restore,
+    // so re-fetch config manually when the page is resurrected from cache.
+    function onPageShow(e) {
+      if (e.persisted) loadConfig();
+    }
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [avatarError, setAvatarError] = useState(null);
