@@ -1,26 +1,61 @@
 import { useRef, useState } from "react";
-import {
-  appearance,
-  backstory,
-  personality,
-  allies,
-  undeadCondition,
-  proficienciesLanguages,
-} from "../data/character";
-import Cell from "./ui/Cell";
+import { avatarPlaceholder } from "../data/character";
 import Icon from "./ui/Icon";
 import SectionCard from "./layout/SectionCard";
 import "./BackgroundPanel.css";
 
 const TABS = ["Backstory", "Proficiencies & Languages", "Notes"];
 
-export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure, avatarUrls, characterProfile, onGenerateAvatar, isGeneratingAvatar, avatarError }) {
+const APPEARANCE_FIELDS = [
+  ["age", "Age"],
+  ["height", "Height"],
+  ["weight", "Weight"],
+  ["eyes", "Eyes"],
+  ["skin", "Skin"],
+  ["hair", "Hair"],
+];
+
+const PERSONALITY_FIELDS = [
+  ["traits", "Traits"],
+  ["ideals", "Ideals"],
+  ["bonds", "Bonds"],
+  ["flaws", "Flaws"],
+];
+
+const PROFICIENCY_FIELDS = [
+  ["languages", "Languages"],
+  ["tools", "Tools"],
+  ["armorWeapons", "Armor & Weapons"],
+];
+
+export default function BackgroundPanel({
+  notes,
+  setNotes,
+  treasure,
+  setTreasure,
+  avatarUrls,
+  characterProfile,
+  setCharacterProfile,
+  background,
+  setBackground,
+  onGenerateAvatar,
+  isGeneratingAvatar,
+  avatarError,
+  credits = 0,
+  needsCredits,
+  onBuyCredits,
+}) {
   const [tab, setTab] = useState("Backstory");
   const dialogRef = useRef(null);
 
   const openConfirm = () => dialogRef.current?.showModal();
   const closeConfirm = () => dialogRef.current?.close();
   const confirmGenerate = () => { closeConfirm(); onGenerateAvatar(); };
+
+  const updateProfile = (field) => (e) =>
+    setCharacterProfile((prev) => ({ ...prev, [field]: e.target.value }));
+  const updateBackground = (field) => (e) =>
+    setBackground((prev) => ({ ...prev, [field]: e.target.value }));
 
   const updateTreasure = (index) => (e) =>
     setTreasure((prev) => prev.map((t, i) => (i === index ? e.target.value : t)));
@@ -49,8 +84,8 @@ export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure
           <div className="background-panel__portrait-wrap">
             <div className="background-panel__portrait">
               <img
-                src={avatarUrls?.full || "/valten-full.jpg"}
-                onError={(e) => { e.target.onerror = null; e.target.src = "/valten-full.jpg"; }}
+                src={avatarUrls?.full || avatarPlaceholder}
+                onError={(e) => { e.target.onerror = null; e.target.src = avatarPlaceholder; }}
                 alt={characterProfile?.characterName || "Character, full body"}
               />
             </div>
@@ -60,10 +95,17 @@ export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure
               onClick={openConfirm}
               disabled={isGeneratingAvatar}
             >
-              {isGeneratingAvatar ? "Generating…" : "↺ Regenerate Avatar"}
+              {isGeneratingAvatar ? "Generating…" : "✦ Generate Avatar"}
             </button>
-            {avatarError && (
-              <p className="background-panel__avatar-error">{avatarError}</p>
+            {needsCredits ? (
+              <div className="background-panel__avatar-error">
+                <p>You're out of avatar credits.</p>
+                <button type="button" className="background-panel__buy-btn" onClick={onBuyCredits}>
+                  Buy 10 credits — €3
+                </button>
+              </div>
+            ) : (
+              avatarError && <p className="background-panel__avatar-error">{avatarError}</p>
             )}
           </div>
 
@@ -71,8 +113,9 @@ export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure
             <p className="background-panel__confirm-title">Generate new avatar?</p>
             <p className="background-panel__confirm-body">
               This will create a new portrait for{" "}
-              <strong>{characterProfile?.characterName || "your character"}</strong> using Gemini AI.
-              Each generation uses API credits.
+              <strong>{characterProfile?.characterName || "your character"}</strong> using AI,
+              based on the description below. You have <strong>{credits}</strong> credit
+              {credits === 1 ? "" : "s"} left.
             </p>
             <div className="background-panel__confirm-actions">
               <button type="button" className="background-panel__confirm-cancel" onClick={closeConfirm}>
@@ -83,60 +126,61 @@ export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure
               </button>
             </div>
           </dialog>
+
           <div className="background-panel__backstory-text">
-            <p className="background-panel__paragraph">{backstory}</p>
-            <p className="background-panel__paragraph">{characterProfile?.description || appearance.description}</p>
+            <textarea
+              className="background-panel__textarea"
+              value={background?.backstory ?? ""}
+              onChange={updateBackground("backstory")}
+              placeholder="Where does your character come from? Write their backstory here…"
+              rows={8}
+            />
+            <textarea
+              className="background-panel__textarea"
+              value={characterProfile?.description ?? ""}
+              onChange={updateProfile("description")}
+              placeholder="Physical appearance — this is also the prompt used for AI avatar generation…"
+              rows={5}
+            />
 
             <div className="background-panel__grid">
-              <div>
-                <p className="background-panel__label">Age</p>
-                <p>{appearance.age}</p>
-              </div>
-              <div>
-                <p className="background-panel__label">Height</p>
-                <p>{appearance.height}</p>
-              </div>
-              <div>
-                <p className="background-panel__label">Weight</p>
-                <p>{appearance.weight}</p>
-              </div>
-              <div>
-                <p className="background-panel__label">Eyes</p>
-                <p>{appearance.eyes}</p>
-              </div>
-              <div>
-                <p className="background-panel__label">Skin</p>
-                <p>{appearance.skin}</p>
-              </div>
-              <div>
-                <p className="background-panel__label">Hair</p>
-                <p>{appearance.hair}</p>
-              </div>
+              {APPEARANCE_FIELDS.map(([field, label]) => (
+                <div key={field}>
+                  <p className="background-panel__label">{label}</p>
+                  <input
+                    className="inline-input"
+                    value={characterProfile?.[field] ?? ""}
+                    onChange={updateProfile(field)}
+                    aria-label={label}
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="background-panel__cards">
             <SectionCard title="Personality">
-              <p>
-                <strong>Traits:</strong> {personality.traits}
-              </p>
-              <p>
-                <strong>Ideals:</strong> {personality.ideals}
-              </p>
-              <p>
-                <strong>Bonds:</strong> {personality.bonds}
-              </p>
-              <p>
-                <strong>Flaws:</strong> {personality.flaws}
-              </p>
+              {PERSONALITY_FIELDS.map(([field, label]) => (
+                <p key={field} className="background-panel__field-row">
+                  <strong>{label}:</strong>{" "}
+                  <input
+                    className="inline-input"
+                    value={background?.[field] ?? ""}
+                    onChange={updateBackground(field)}
+                    aria-label={label}
+                  />
+                </p>
+              ))}
             </SectionCard>
 
             <SectionCard title="Allies & Organizations">
-              {allies.map((a) => (
-                <p key={a.name}>
-                  <strong>{a.name}:</strong> {a.description}
-                </p>
-              ))}
+              <textarea
+                className="background-panel__textarea"
+                value={background?.allies ?? ""}
+                onChange={updateBackground("allies")}
+                placeholder="Factions, patrons, and allies…"
+                rows={4}
+              />
             </SectionCard>
 
             <SectionCard title="Treasure">
@@ -154,23 +198,24 @@ export default function BackgroundPanel({ notes, setNotes, treasure, setTreasure
                 + Add Treasure
               </button>
             </SectionCard>
-
-            <SectionCard title={undeadCondition.title}>
-              <ul className="background-panel__list">
-                {undeadCondition.lines.map((l) => (
-                  <li key={l}>{l}</li>
-                ))}
-              </ul>
-            </SectionCard>
           </div>
         </div>
       )}
 
       {tab === "Proficiencies & Languages" && (
         <div className="background-panel__cells">
-          <Cell label="Languages" sublabel={proficienciesLanguages.languages.join(", ")} />
-          <Cell label="Tools" sublabel={proficienciesLanguages.tools.join(", ")} />
-          <Cell label="Armor & Weapons" sublabel={proficienciesLanguages.armorWeapons.join(", ")} />
+          {PROFICIENCY_FIELDS.map(([field, label]) => (
+            <div key={field} className="background-panel__prof-field">
+              <p className="background-panel__label">{label}</p>
+              <input
+                className="inline-input"
+                value={background?.[field] ?? ""}
+                onChange={updateBackground(field)}
+                placeholder="Comma-separated"
+                aria-label={label}
+              />
+            </div>
+          ))}
         </div>
       )}
 

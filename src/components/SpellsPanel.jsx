@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { findSpellCard } from "../data/spells";
+import { findSpellCard, newSpellClass } from "../data/spells";
 import CheckboxGroup from "./ui/CheckboxGroup";
 import Icon from "./ui/Icon";
 import NumberInput from "./ui/NumberInput";
@@ -9,7 +9,7 @@ import MagicItemCard from "./MagicItemCard";
 import SectionCard from "./layout/SectionCard";
 import "./SpellsPanel.css";
 
-const SUB_TABS = ["Cleric", "Warlock", "Magic Items"];
+const MAGIC_ITEMS_TAB = "Magic Items";
 
 function newMagicItemId() {
   return `item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -29,10 +29,33 @@ export default function SpellsPanel({
   proficiencyBonus,
   spellDatabase,
 }) {
-  const [tab, setTab] = useState("Cleric");
+  const classKeys = Object.keys(spellClasses);
+  const [tab, setTab] = useState(classKeys[0] ?? MAGIC_ITEMS_TAB);
   const [justAdded, setJustAdded] = useState(() => new Set());
   const pickerRef = useRef(null);
   const [pickerCtx, setPickerCtx] = useState({ classKey: null, level: null });
+
+  // Config hydration can add classes after mount — land on the first one
+  // instead of leaving the user on an empty tab.
+  const activeTab = tab === MAGIC_ITEMS_TAB || spellClasses[tab] ? tab : classKeys[0] ?? MAGIC_ITEMS_TAB;
+
+  const addSpellClass = () => {
+    const label = window.prompt("Spellcasting class name (e.g. Cleric, Warlock)");
+    if (!label?.trim()) return;
+    const key = label.trim().toLowerCase().replace(/\s+/g, "-");
+    if (spellClasses[key]) return setTab(key);
+    setSpellClasses((prev) => ({ ...prev, [key]: newSpellClass(label.trim()) }));
+    setTab(key);
+  };
+
+  const removeSpellClass = (classKey) => {
+    if (!window.confirm(`Remove the ${spellClasses[classKey]?.label ?? classKey} spell list?`)) return;
+    setSpellClasses((prev) => {
+      const { [classKey]: _, ...rest } = prev;
+      return rest;
+    });
+    setTab(MAGIC_ITEMS_TAB);
+  };
 
   const togglePrepared = (name) => setPrepared((prev) => ({ ...prev, [name]: !prev[name] }));
   const updateCustomCard = (name) => (updated) => setCustomCards((prev) => ({ ...prev, [name]: updated }));
@@ -280,23 +303,45 @@ export default function SpellsPanel({
         onCustom={handleCustomSpell}
       />
       <div className="spells-panel__tabs" role="tablist">
-        {SUB_TABS.map((t) => (
+        {classKeys.map((key) => (
           <button
-            key={t}
+            key={key}
             type="button"
             role="tab"
-            aria-selected={tab === t}
-            className={`spells-panel__tab ${tab === t ? "spells-panel__tab--active" : ""}`}
-            onClick={() => setTab(t)}
+            aria-selected={activeTab === key}
+            className={`spells-panel__tab ${activeTab === key ? "spells-panel__tab--active" : ""}`}
+            onClick={() => setTab(key)}
           >
-            {t}
+            {spellClasses[key].label || key}
           </button>
         ))}
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === MAGIC_ITEMS_TAB}
+          className={`spells-panel__tab ${activeTab === MAGIC_ITEMS_TAB ? "spells-panel__tab--active" : ""}`}
+          onClick={() => setTab(MAGIC_ITEMS_TAB)}
+        >
+          {MAGIC_ITEMS_TAB}
+        </button>
+        <button type="button" className="spells-panel__tab" onClick={addSpellClass}>
+          + Class
+        </button>
       </div>
 
-      {tab === "Cleric" && renderClass("cleric")}
-      {tab === "Warlock" && renderClass("warlock")}
-      {tab === "Magic Items" && (
+      {classKeys.includes(activeTab) && (
+        <>
+          {renderClass(activeTab)}
+          <button
+            type="button"
+            className="add-row-button"
+            onClick={() => removeSpellClass(activeTab)}
+          >
+            Remove {spellClasses[activeTab].label || activeTab}
+          </button>
+        </>
+      )}
+      {activeTab === MAGIC_ITEMS_TAB && (
         <div className="spells-panel__items">
           {magicItems.map((item) => (
             <MagicItemCard

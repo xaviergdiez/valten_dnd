@@ -1,4 +1,4 @@
-import { readData } from "./lib/storage.js";
+import { readData, charKey, redis } from "./lib/storage.js";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
@@ -6,14 +6,16 @@ export default async function handler(req, res) {
     return res.status(405).end();
   }
 
-  const auth = req.headers["authorization"] ?? "";
-  if (auth !== `Bearer ${process.env.SYNC_SECRET}`) {
+  // Per-character sync token minted in the app (Character list → Sheet sync).
+  const bearer = (req.headers["authorization"] ?? "").replace(/^Bearer /, "");
+  const grant = bearer ? await redis.get(`synctoken:${bearer}`) : null;
+  if (!grant?.uid || !grant?.cid) {
     return res.status(401).json({ error: "unauthorized" });
   }
 
   const [state, config] = await Promise.all([
-    readData("state"),
-    readData("config"),
+    readData(charKey(grant.uid, grant.cid, "state")),
+    readData(charKey(grant.uid, grant.cid, "config")),
   ]);
 
   // Union spellClasses from state and config so class assignments survive even

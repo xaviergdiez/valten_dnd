@@ -117,6 +117,26 @@ input.header__classlevel-input {
   font-size: 14px;
 }
 
+input.header__name-input {
+  font-family: var(--font-display);
+  font-size: 26px;
+  width: 14ch;
+  max-width: 100%;
+}
+
+input.header__nickname-input {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  width: 14ch;
+}
+
+input.header__race-input {
+  width: 14ch;
+  font-size: 14px;
+}
+
 /* Stat row anchored to second row, right column */
 .header > .stat-row {
   grid-column: 2;

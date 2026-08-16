@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { usePersistedState, fetchRemoteState } from "./hooks/usePersistedState";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import {
-  profile,
-  appearance,
+  profileSeed,
+  backgroundSeed,
   proficiencyBonusSeed,
   combatSeed,
   abilityScoresSeed,
@@ -32,30 +32,15 @@ const TAB_ORDER = ["Combat", "Abilities & Skills", "Spells", "Equipment", "Featu
 
 const skillProficienciesSeed = Object.fromEntries(skillsSeed.map((s) => [s.name, s.proficient]));
 
-const characterProfileSeed = {
-  characterName: profile.name,
-  nickname: profile.nickname,
-  race: profile.race,
-  gender: "",
-  background: profile.background,
-  age: String(appearance.age),
-  height: appearance.height,
-  weight: appearance.weight,
-  eyes: appearance.eyes,
-  skin: appearance.skin,
-  hair: appearance.hair,
-  description: appearance.description,
-};
-
-export default function App() {
-  const [classLevel, setClassLevel] = usePersistedState("classLevel", profile.classLevel);
-  // Not persisted — always starts from seed and gets overridden by config fetch,
-  // so stale profile data never gets stuck in localStorage.
-  const [characterProfile, setCharacterProfile] = useState(characterProfileSeed);
+export default function App({ charId, me }) {
+  const [classLevel, setClassLevel] = usePersistedState("classLevel", "");
+  const [characterProfile, setCharacterProfile] = usePersistedState("characterProfile", profileSeed);
+  const [background, setBackground] = usePersistedState("background", backgroundSeed);
   const [avatarUrls, setAvatarUrls] = usePersistedState("avatarUrls", { full: null, crop: null });
   const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
   const [spellDatabase, setSpellDatabase] = useState([]);
-  const [inspiration, setInspiration] = usePersistedState("inspiration", profile.inspiration);
+  const [inspiration, setInspiration] = usePersistedState("inspiration", false);
+  const [credits, setCredits] = useState(me?.credits ?? 0);
 
   const [abilityScores, setAbilityScores] = usePersistedState("abilityScores", abilityScoresSeed);
   const [proficiencyBonus, setProficiencyBonus] = usePersistedState("proficiencyBonus", proficiencyBonusSeed);
@@ -109,8 +94,7 @@ export default function App() {
         setSpellClasses((prev) => {
           const next = { ...prev };
           for (const [key, cls] of Object.entries(cfg.spellClasses)) {
-            const hasKnown = Object.values(cls.knownByLevel ?? {}).some((arr) => arr.length > 0);
-            const baseKnown = hasKnown ? cls.knownByLevel : (spellClassesSeed[key]?.knownByLevel ?? {});
+            const baseKnown = cls.knownByLevel ?? {};
 
             // Union merge: start from config baseline, then add any levels/spells
             // that exist only in prev (added in-app since last sheet sync).
@@ -149,7 +133,7 @@ export default function App() {
     }
 
     function loadConfig() {
-      return fetch("/api/config")
+      return fetch(`/api/config?c=${charId}`)
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null)
         .then(applyConfig);
@@ -167,19 +151,25 @@ export default function App() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [avatarError, setAvatarError] = useState(null);
+  const [needsCredits, setNeedsCredits] = useState(false);
 
   const handleGenerateAvatar = async () => {
     setIsGeneratingAvatar(true);
     setAvatarError(null);
+    setNeedsCredits(false);
     try {
       const res = await fetch("/api/generate-avatar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profile: { ...characterProfile, classLevel } }),
+        body: JSON.stringify({ c: charId, profile: { ...characterProfile, classLevel } }),
       });
       const data = await res.json();
       if (res.ok) {
         setAvatarUrls(data.avatarUrls);
+        setCredits(data.creditsLeft ?? 0);
+      } else if (res.status === 402) {
+        setNeedsCredits(true);
+        setCredits(0);
       } else {
         setAvatarError(data.error || "Generation failed — try again");
       }
@@ -189,6 +179,11 @@ export default function App() {
     } finally {
       setIsGeneratingAvatar(false);
     }
+  };
+
+  const handleBuyCredits = async () => {
+    const res = await fetch("/api/checkout", { method: "POST" });
+    if (res.ok) window.location.href = (await res.json()).url;
   };
 
   const isWide = useMediaQuery("(min-width: 1100px)");
@@ -249,7 +244,25 @@ export default function App() {
       id: "background",
       tabGroup: "Background",
       wide: true,
-      content: <BackgroundPanel notes={notes} setNotes={setNotes} treasure={treasure} setTreasure={setTreasure} avatarUrls={avatarUrls} characterProfile={characterProfile} onGenerateAvatar={handleGenerateAvatar} isGeneratingAvatar={isGeneratingAvatar} avatarError={avatarError} />,
+      content: (
+        <BackgroundPanel
+          notes={notes}
+          setNotes={setNotes}
+          treasure={treasure}
+          setTreasure={setTreasure}
+          avatarUrls={avatarUrls}
+          characterProfile={characterProfile}
+          setCharacterProfile={setCharacterProfile}
+          background={background}
+          setBackground={setBackground}
+          onGenerateAvatar={handleGenerateAvatar}
+          isGeneratingAvatar={isGeneratingAvatar}
+          avatarError={avatarError}
+          credits={credits}
+          needsCredits={needsCredits}
+          onBuyCredits={handleBuyCredits}
+        />
+      ),
     },
   ];
 
@@ -257,9 +270,17 @@ export default function App() {
   const visibleCards = visibleAll.filter((c) => !c.wide);
   const visibleWidePanels = visibleAll.filter((c) => c.wide);
 
+  const backToList = () => {
+    window.location.hash = "#/characters";
+    window.location.reload();
+  };
+
   return (
     <div className="app">
       <div className="app__container">
+        <button type="button" className="app__back" onClick={backToList}>
+          ← All characters
+        </button>
         <Header
           hpCurrent={hpCurrent}
           setHpCurrent={setHpCurrent}
@@ -272,6 +293,7 @@ export default function App() {
           inspiration={inspiration}
           setInspiration={setInspiration}
           characterProfile={characterProfile}
+          setCharacterProfile={setCharacterProfile}
           avatarUrls={avatarUrls}
           isGeneratingAvatar={isGeneratingAvatar}
         />

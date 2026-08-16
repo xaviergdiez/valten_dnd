@@ -1,5 +1,6 @@
 import StatRow from "./ui/StatRow";
 import NumberInput from "./ui/NumberInput";
+import { avatarPlaceholder } from "../data/character";
 import "./Header.css";
 
 export default function Header({
@@ -14,19 +15,21 @@ export default function Header({
   inspiration,
   setInspiration,
   characterProfile,
+  setCharacterProfile,
   avatarUrls,
   isGeneratingAvatar,
 }) {
   const name = characterProfile?.characterName || "Character";
-  const nickname = characterProfile?.nickname;
-  const race = characterProfile?.race || "";
   const cropUrl = avatarUrls?.crop;
+  const updateProfile = (field) => (e) =>
+    setCharacterProfile((prev) => ({ ...prev, [field]: e.target.value }));
 
   return (
     <header className="header">
       <div className={`header__portrait ${isGeneratingAvatar ? "header__portrait--generating" : ""}`}>
         <img
-          src={cropUrl || "/valten-avatar.jpg"}
+          src={cropUrl || avatarPlaceholder}
+          onError={(e) => { e.target.onerror = null; e.target.src = avatarPlaceholder; }}
           alt={name}
         />
         {isGeneratingAvatar && (
@@ -38,15 +41,35 @@ export default function Header({
 
       <div className="header__identity">
         <h1 className="header__name">
-          {name}
-          {nickname && <span className="header__nickname"> "{nickname}"</span>}
+          <input
+            className="inline-input header__name-input"
+            value={characterProfile?.characterName ?? ""}
+            onChange={updateProfile("characterName")}
+            placeholder="Character name"
+            aria-label="Character name"
+          />
+          <input
+            className="inline-input header__nickname-input"
+            value={characterProfile?.nickname ?? ""}
+            onChange={updateProfile("nickname")}
+            placeholder="nickname"
+            aria-label="Nickname"
+          />
         </h1>
         <p className="header__subline">
-          {race && <>{race} &bull; </>}
+          <input
+            className="inline-input header__race-input"
+            value={characterProfile?.race ?? ""}
+            onChange={updateProfile("race")}
+            placeholder="Race"
+            aria-label="Race"
+          />
+          {" • "}
           <input
             className="inline-input header__classlevel-input"
             value={classLevel}
             onChange={(e) => setClassLevel(e.target.value)}
+            placeholder="Class & level"
             aria-label="Class and level"
           />
         </p>

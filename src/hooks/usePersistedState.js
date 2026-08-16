@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 
-const PREFIX = "valten-sheet:";
-const API_URL = "/api/state";
+// Character id from the hash route. Safe to read once at module scope:
+// switching characters always goes through a full page reload.
+const CID = (window.location.hash.match(/^#\/char\/([a-z0-9-]+)/) || [])[1] ?? "";
+const PREFIX = `sheet:${CID}:`;
+const API_URL = `/api/state?c=${CID}`;
 const FLUSH_DELAY_MS = 800;
 const PERIODIC_SAVE_MS = 20_000; // save at most every 20s as a safety net
 

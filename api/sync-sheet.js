@@ -1,4 +1,4 @@
-import { readData, writeData } from "./lib/storage.js";
+import { readData, writeData, charKey, redis } from "./lib/storage.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -6,13 +6,17 @@ export default async function handler(req, res) {
     return res.status(405).end();
   }
 
-  const auth = req.headers["authorization"] ?? "";
-  if (auth !== `Bearer ${process.env.SYNC_SECRET}`) {
+  // Per-character sync token minted in the app (Character list → Sheet sync).
+  const bearer = (req.headers["authorization"] ?? "").replace(/^Bearer /, "");
+  const grant = bearer ? await redis.get(`synctoken:${bearer}`) : null;
+  if (!grant?.uid || !grant?.cid) {
     return res.status(401).json({ error: "unauthorized" });
   }
+  const configKey  = charKey(grant.uid, grant.cid, "config");
+  const spelldbKey = charKey(grant.uid, grant.cid, "spelldb");
 
   try {
-    const existing = await readData("config");
+    const existing = await readData(configKey);
     const sheets = req.body ?? {};
     const built = buildConfig(sheets);
 
@@ -23,8 +27,8 @@ export default async function handler(req, res) {
     delete existingWithoutDb.spellDatabase;
 
     const config = { ...existingWithoutDb, ...built };
-    await writeData("config", config);
-    if (spellDatabase) await writeData("spelldb", spellDatabase);
+    await writeData(configKey, config);
+    if (spellDatabase) await writeData(spelldbKey, spellDatabase);
     return res.status(200).json({ ok: true, updatedAt: new Date().toISOString() });
   } catch (err) {
     console.error("sync-sheet error:", err?.message ?? err);

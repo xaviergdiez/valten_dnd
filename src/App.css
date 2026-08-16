@@ -10,3 +10,18 @@
   max-width: 1600px;
   margin: 0 auto;
 }
+
+.app__back {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0;
+}
+
+.app__back:hover {
+  color: var(--color-text);
+}

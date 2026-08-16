@@ -2,22 +2,35 @@ import { Redis } from "@upstash/redis";
 
 const redis = Redis.fromEnv();
 
-export async function readData(resource) {
+// cid comes from the URL — the regex blocks ":" so a forged cid can't escape
+// its key namespace. uid always comes from the session, never the request.
+const CID_RE = /^[a-z0-9-]{1,40}$/;
+
+export function charKey(uid, cid, part) {
+  if (!CID_RE.test(cid ?? "")) return null;
+  return `char:${uid}:${cid}:${part}`;
+}
+
+export async function readData(key) {
   try {
-    const data = await redis.get(resource);
+    const data = await redis.get(key);
     return data ?? {};
   } catch {
     return {};
   }
 }
 
-export async function writeData(resource, data) {
-  await redis.set(resource, data);
+export async function writeData(key, data) {
+  await redis.set(key, data);
 }
 
-export async function readAvatar() {
+export async function deleteData(...keys) {
+  await redis.del(...keys);
+}
+
+export async function readAvatar(key) {
   try {
-    const data = await redis.get("avatar");
+    const data = await redis.get(key);
     if (!data) return null;
     const { b64, mimeType } = data;
     return {
@@ -29,6 +42,8 @@ export async function readAvatar() {
   }
 }
 
-export async function writeAvatar(mimeType, imageBuffer) {
-  await redis.set("avatar", { mimeType, b64: imageBuffer.toString("base64") });
+export async function writeAvatar(key, mimeType, imageBuffer) {
+  await redis.set(key, { mimeType, b64: imageBuffer.toString("base64") });
 }
+
+export { redis };
