@@ -4,8 +4,8 @@
  * SETUP (one-time):
  * 1. In your Google Sheet: Extensions → Apps Script → paste this file.
  * 2. In Apps Script: Project Settings → Script Properties → add:
- *      SYNC_SECRET  →  d38f70fe11c0dd551b7563557247c1a1647fa6b2e3bd1f0a12d743cf
- *      WEBHOOK_URL  →  https://dndvalten.vercel.app/api/sync-sheet
+ *      SYNC_SECRET  →  [your sync token — generate it in the app, Character list → Sheet sync]
+ *      WEBHOOK_URL  →  [your app URL]/api/sync-sheet
  * 3. Run `createTrigger()` once (select it in the dropdown → Run) to set up
  *    the automatic onChange trigger.
  * 4. Run `syncToApp()` manually once to do an initial push.
