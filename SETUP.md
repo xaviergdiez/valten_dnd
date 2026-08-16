@@ -116,7 +116,9 @@ For local `vercel dev`, mirror these into `.env.local`.
   sheet is actively edited, so ~25 continuous editing-hours a day. Upgrade to
   pay-as-you-go, or raise `PERIODIC_SAVE_MS` in
   [src/hooks/usePersistedState.js](src/hooks/usePersistedState.js), if you hit it.
-- **Vercel Hobby**: 12 serverless functions max. There are currently 11
-  (12 while `api/migrate.js` exists — delete it after migrating).
+- **Vercel Hobby**: 12 serverless functions max — and Vercel counts *every*
+  `.js` file under `/api`, not just the endpoints. That's why shared modules
+  live in top-level [lib/](lib/) instead of `api/lib/`. Currently 11 functions
+  (10 once `api/migrate.js` is deleted).
 - **Avatars** are downscaled to 768px JPEG before storage; raw Gemini PNGs
   exceed Upstash's 1MB value limit.

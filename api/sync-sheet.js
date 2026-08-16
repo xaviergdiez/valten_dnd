@@ -1,4 +1,4 @@
-import { readData, writeData, charKey, redis } from "./lib/storage.js";
+import { readData, writeData, charKey, redis } from "../lib/storage.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

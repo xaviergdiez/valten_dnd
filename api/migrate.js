@@ -3,8 +3,8 @@
 // the migration is verified. Self-contained on purpose — src/data/character.js
 // is being genericized in the same deploy.
 import crypto from "node:crypto";
-import { readData, writeData, charKey, redis } from "./lib/storage.js";
-import { getUser, saveUser } from "./lib/auth.js";
+import { readData, writeData, charKey, redis } from "../lib/storage.js";
+import { getUser, saveUser } from "../lib/auth.js";
 
 const VALTEN = {
   characterProfile: {

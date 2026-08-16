@@ -1,5 +1,5 @@
-import { readAvatar, charKey } from "./lib/storage.js";
-import { requireUser } from "./lib/auth.js";
+import { readAvatar, charKey } from "../lib/storage.js";
+import { requireUser } from "../lib/auth.js";
 
 export default async function handler(req, res) {
   const uid = await requireUser(req, res);

@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
-import { charKey, deleteData, redis } from "./lib/storage.js";
-import { requireUser, getUser, saveUser, randomToken } from "./lib/auth.js";
+import { charKey, deleteData, redis } from "../lib/storage.js";
+import { requireUser, getUser, saveUser, randomToken } from "../lib/auth.js";
 
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");

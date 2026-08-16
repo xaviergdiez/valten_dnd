@@ -1,5 +1,5 @@
-import { readData, writeData, charKey } from "./lib/storage.js";
-import { requireUser } from "./lib/auth.js";
+import { readData, writeData, charKey } from "../lib/storage.js";
+import { requireUser } from "../lib/auth.js";
 
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");

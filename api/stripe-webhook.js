@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { redis } from "./lib/storage.js";
+import { redis } from "../lib/storage.js";
 
 // Stripe signature verification needs the raw request body — Vercel's default
 // JSON parsing would break it.

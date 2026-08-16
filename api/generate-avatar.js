@@ -1,6 +1,6 @@
 import sharp from "sharp";
-import { writeAvatar, charKey, redis } from "./lib/storage.js";
-import { requireUser } from "./lib/auth.js";
+import { writeAvatar, charKey, redis } from "../lib/storage.js";
+import { requireUser } from "../lib/auth.js";
 
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 

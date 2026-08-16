@@ -7,8 +7,8 @@ import {
   destroySession,
   getUser,
   saveUser,
-} from "../lib/auth.js";
-import { redis } from "../lib/storage.js";
+} from "../../lib/auth.js";
+import { redis } from "../../lib/storage.js";
 
 const GOOGLE_AUTH = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN = "https://oauth2.googleapis.com/token";
