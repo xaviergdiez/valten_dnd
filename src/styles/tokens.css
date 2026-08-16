@@ -1,8 +1,7 @@
 :root {
-  /* Restyled around Valten_SpellCards.pdf's actual look: bold black rounded
+  /* Card-game graphic style rather than antique parchment: bold black rounded
      card frames, a pill-shaped title banner, chunky display type, and bold
-     uppercase stat labels with divider rules — a modern card-game graphic
-     style rather than antique parchment. */
+     uppercase stat labels with divider rules. */
   --color-parchment: #f1ece0;
   --color-ink: #1a1a1a;
   --color-ink-soft: #4a4636;

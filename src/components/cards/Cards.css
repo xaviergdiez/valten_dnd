@@ -17,7 +17,7 @@
 }
 
 /* Spell card: pill title banner overlapping the top border + circular level
-   token, matching Valten_SpellCards.pdf. */
+   token. */
 .card__banner-row {
   display: flex;
   align-items: center;
